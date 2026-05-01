@@ -20,18 +20,25 @@ public class InputTiming : MonoBehaviour
     {
         float timeSinceBeat = Mathf.Abs(Time.time - beatManager.LastBeatTime);
 
+        TimingResult result;
+
         if (timeSinceBeat <= perfectWindow)
         {
-            Debug.Log("PERFECT!");
-            return TimingResult.Perfect;
+            result = TimingResult.Perfect;
+            UIManager.Instance.ShowTiming("PERFECT!");
         }
         else if (timeSinceBeat <= goodWindow)
         {
-            Debug.Log("GOOD!");
-            return TimingResult.Good;
+            result = TimingResult.Good;
+            UIManager.Instance.ShowTiming("GOOD!");
+        }
+        else
+        {
+            result = TimingResult.Miss;
+            UIManager.Instance.ShowTiming("MISS!");
         }
 
-        Debug.Log("MISS!");
-        return TimingResult.Miss;
+        ScoreManager.Instance.AddScore(result);
+        return result;
     }
 }
