@@ -2,28 +2,52 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float forwardSpeed = 10f;
+    [Header("Movement Settings")]
+    public float forwardSpeed = 8f;
     public float laneDistance = 2f;
     public float laneChangeSpeed = 10f;
 
-    private int currentLane = 1; // 0=sol, 1=orta, 2=sağ
+    private int currentLane = 1; // 0 = Sol, 1 = Orta, 2 = Sağ
+    private Vector3 targetPosition;
+
+    void Start()
+    {
+        targetPosition = transform.position;
+    }
 
     void Update()
     {
+        HandleInput();
+        MoveForward();
+        MoveToLane();
+    }
+    void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        {
+            if (currentLane > 0)
+                currentLane--;
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        {
+            if (currentLane < 2)
+                currentLane++;
+        }
+    }
+
+    void MoveForward()
+    {
         transform.Translate(Vector3.forward * forwardSpeed * Time.deltaTime);
-
-        if (Input.GetKeyDown(KeyCode.LeftArrow) && currentLane > 0)
-            currentLane--;
-
-        if (Input.GetKeyDown(KeyCode.RightArrow) && currentLane < 2)
-            currentLane++;
-
-        Vector3 targetPosition = transform.position;
-        targetPosition.x = (currentLane - 1) * laneDistance;
+    }
+    void MoveToLane()
+    {
+        float targetX = (currentLane - 1) * laneDistance;
+        Vector3 desiredPosition = new Vector3(targetX, transform.position.y, transform.position.z);
 
         transform.position = Vector3.Lerp(
             transform.position,
-            targetPosition,
+            desiredPosition,
             laneChangeSpeed * Time.deltaTime
         );
     }
