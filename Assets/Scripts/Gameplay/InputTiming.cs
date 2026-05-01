@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class InputTiming : MonoBehaviour
 {
+    public enum TimingResult
+    {
+        Perfect,
+        Good,
+        Miss
+    }
+
     [Header("References")]
     public BeatManager beatManager;
 
@@ -9,29 +16,22 @@ public class InputTiming : MonoBehaviour
     public float perfectWindow = 0.1f;
     public float goodWindow = 0.2f;
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            CheckTiming();
-        }
-    }
-
-    void CheckTiming()
+    public TimingResult CheckTiming()
     {
         float timeSinceBeat = Mathf.Abs(Time.time - beatManager.LastBeatTime);
 
         if (timeSinceBeat <= perfectWindow)
         {
             Debug.Log("PERFECT!");
+            return TimingResult.Perfect;
         }
         else if (timeSinceBeat <= goodWindow)
         {
             Debug.Log("GOOD!");
+            return TimingResult.Good;
         }
-        else
-        {
-            Debug.Log("MISS!");
-        }
+
+        Debug.Log("MISS!");
+        return TimingResult.Miss;
     }
 }
