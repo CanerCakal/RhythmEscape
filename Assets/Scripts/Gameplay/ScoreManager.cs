@@ -6,6 +6,7 @@ public class ScoreManager : MonoBehaviour
 
     public int Score { get; private set; }
     public int Combo { get; private set; }
+    public int HighScore { get; private set; }
 
     private void Awake()
     {
@@ -13,6 +14,10 @@ public class ScoreManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
+    }
+    private void Start()
+    {
+        HighScore = PlayerPrefs.GetInt("HighScore", 0);
     }
 
     public void AddScore(InputTiming.TimingResult result)
@@ -34,8 +39,14 @@ public class ScoreManager : MonoBehaviour
                 break;
         }
 
+        if (Score > HighScore)
+        {
+            HighScore = Score;
+            PlayerPrefs.SetInt("HighScore", HighScore);
+        }
+
         Debug.Log("Score: " + Score + " | Combo: " + Combo);
-        
+
         UIManager.Instance.UpdateScore(Score);
         UIManager.Instance.UpdateCombo(Combo);
     }

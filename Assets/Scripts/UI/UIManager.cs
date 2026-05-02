@@ -9,6 +9,9 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI comboText;
     public TextMeshProUGUI timingText;
+    public GameObject gameOverPanel;
+    public TextMeshProUGUI finalScoreText;
+    public TextMeshProUGUI highScoreText;
 
     private void Awake()
     {
@@ -30,6 +33,13 @@ public class UIManager : MonoBehaviour
         timingText.text = timing;
         CancelInvoke(nameof(ClearTiming));
         Invoke(nameof(ClearTiming), 0.5f);
+    }
+
+    public void ShowGameOver(int score, int highScore)
+    {
+        gameOverPanel.SetActive(true);
+        finalScoreText.text = "Score: " + score;
+        highScoreText.text = "Best: " + highScore;
     }
 
     void ClearTiming()

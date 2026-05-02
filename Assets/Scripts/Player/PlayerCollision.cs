@@ -3,14 +3,23 @@ using UnityEngine.SceneManagement;
 
 public class PlayerCollision : MonoBehaviour
 {
+    private bool isDead = false;
+
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Obstacle"))
+        if (other.CompareTag("Obstacle") && !isDead)
         {
-            Debug.Log("Game Over!");
-
-            // Şimdilik sahneyi yeniden başlat
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            isDead = true;
+            GameOver();
         }
     }
+    void GameOver()
+    {
+        Time.timeScale = 0f;
+        UIManager.Instance.ShowGameOver(
+            ScoreManager.Instance.Score,
+            ScoreManager.Instance.HighScore
+        );
+    }
+
 }
