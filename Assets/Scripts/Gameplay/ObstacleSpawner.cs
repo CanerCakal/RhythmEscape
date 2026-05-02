@@ -2,49 +2,36 @@ using UnityEngine;
 
 public class ObstacleSpawner : MonoBehaviour
 {
-    [Header("References")]
-    public GameObject obstaclePrefab;
-    public Transform player;
+    public GameObject obstaclePrefab; // Engel prefabı
+    public float laneDistance = 3f;   // Şeritler arası mesafe
+    public float spawnZ = 20f;        // Engellerin ne kadar ileride oluşacağı
 
-    [Header("Spawn Settings")]
-    public float spawnDistance = 30f;
-    public float laneDistance = 2f;
-    public int beatsPerSpawn = 2;
-
-    private int beatCount = 0;
-
-    void OnEnable()
+    void Start()
     {
-        BeatManager.OnBeat += HandleBeat;
-    }
-
-    void OnDisable()
-    {
-        BeatManager.OnBeat -= HandleBeat;
-    }
-
-    void HandleBeat()
-    {
-        beatCount++;
-
-        if (beatCount >= beatsPerSpawn)
+        // HATA BURADAYDI: BeatManager.Instance eklendi
+        if (BeatManager.Instance != null)
         {
-            SpawnObstacle();
-            beatCount = 0;
+            // Her ritim vuruşunda SpawnObstacle fonksiyonunu çağırır
+            BeatManager.Instance.OnBeat.AddListener(SpawnObstacle);
+        }
+        else
+        {
+            Debug.LogError("Sahnede BeatManager bulunamadı! Lütfen kontrol et.");
         }
     }
 
     void SpawnObstacle()
     {
-        int lane = Random.Range(0, 3);
-        float xPosition = (lane - 1) * laneDistance;
+        // Rastgele bir şerit seç (0: Sol, 1: Orta, 2: Sağ)
+        int randomLane = Random.Range(0, 3);
+        float xPos = (randomLane - 1) * laneDistance;
 
-        Vector3 spawnPosition = new Vector3(
-            xPosition,
-            0.75f,
-            player.position.z + spawnDistance
-        );
+        Vector3 spawnPos = new Vector3(xPos, 0.5f, transform.position.z + spawnZ);
 
-        Instantiate(obstaclePrefab, spawnPosition, Quaternion.identity);
+        // Engeli oluştur
+        if (obstaclePrefab != null)
+        {
+            Instantiate(obstaclePrefab, spawnPos, Quaternion.identity);
+        }
     }
 }

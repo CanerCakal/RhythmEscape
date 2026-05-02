@@ -2,43 +2,41 @@ using UnityEngine;
 
 public class InputTiming : MonoBehaviour
 {
-    public enum TimingResult
-    {
-        Perfect,
-        Good,
-        Miss
-    }
+    public enum TimingResult { PERFECT, GOOD, MISS }
 
-    [Header("References")]
-    public BeatManager beatManager;
-
-    [Header("Timing Windows")]
-    public float perfectWindow = 0.1f;
-    public float goodWindow = 0.2f;
+    [Header("Tolerans Ayarları")]
+    public float perfectWindow = 0.15f; 
+    public float goodWindow = 0.35f;
 
     public TimingResult CheckTiming()
     {
-        float timeSinceBeat = Mathf.Abs(Time.time - beatManager.LastBeatTime);
+        if (BeatManager.Instance == null) return TimingResult.MISS;
 
-        TimingResult result;
+        float timer = BeatManager.Instance.GetBeatTimer();
+        float interval = BeatManager.Instance.GetBeatInterval();
 
-        if (timeSinceBeat <= perfectWindow)
+        // En yakın vuruşa olan mesafeyi ölç
+        float offset = timer;
+        if (timer > interval / 2f)
         {
-            result = TimingResult.Perfect;
-            UIManager.Instance.ShowTiming("PERFECT!");
-        }
-        else if (timeSinceBeat <= goodWindow)
-        {
-            result = TimingResult.Good;
-            UIManager.Instance.ShowTiming("GOOD!");
-        }
-        else
-        {
-            result = TimingResult.Miss;
-            UIManager.Instance.ShowTiming("MISS!");
+            offset = interval - timer;
         }
 
-        ScoreManager.Instance.AddScore(result);
+        TimingResult result = CalculateResult(offset);
+        
+        // Burası hata aldığın kısımdı, artık ScoreManager'da ProcessHit var
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ProcessHit(result);
+        }
+
         return result;
+    }
+
+    private TimingResult CalculateResult(float offset)
+    {
+        if (offset <= perfectWindow) return TimingResult.PERFECT;
+        else if (offset <= goodWindow) return TimingResult.GOOD;
+        else return TimingResult.MISS;
     }
 }

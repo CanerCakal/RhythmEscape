@@ -2,25 +2,30 @@ using UnityEngine;
 
 public class BeatVisualizer : MonoBehaviour
 {
-    private Renderer objectRenderer;
+    public float pulseSize = 1.2f;
+    public float returnSpeed = 5f;
+    private Vector3 startScale;
 
     void Start()
     {
-        objectRenderer = GetComponent<Renderer>();
+        startScale = transform.localScale;
+
+        // HATA BURADAYDI: BeatManager.Instance eklendi
+        if (BeatManager.Instance != null)
+        {
+            BeatManager.Instance.OnBeat.AddListener(OnBeatTrigger);
+        }
     }
 
-    void OnEnable()
+    void Update()
     {
-        BeatManager.OnBeat += Flash;
+        // Objeyi yavaşça normal boyutuna geri döndürür
+        transform.localScale = Vector3.Lerp(transform.localScale, startScale, Time.deltaTime * returnSpeed);
     }
 
-    void OnDisable()
+    void OnBeatTrigger()
     {
-        BeatManager.OnBeat -= Flash;
-    }
-
-    void Flash()
-    {
-        objectRenderer.material.color = Random.ColorHSV();
+        // Ritim geldiğinde objeyi büyütür
+        transform.localScale = startScale * pulseSize;
     }
 }

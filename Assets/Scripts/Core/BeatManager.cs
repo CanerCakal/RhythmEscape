@@ -1,33 +1,43 @@
 using UnityEngine;
-using System;
+using UnityEngine.Events;
 
 public class BeatManager : MonoBehaviour
 {
-    [Header("Music Settings")]
-    public AudioSource musicSource;
+    public static BeatManager Instance;
     public float bpm = 120f;
+    public UnityEvent OnBeat;
 
-    [Header("Beat Settings")]
-    public float beatInterval;
-    public float LastBeatTime { get; private set; }
-    private float nextBeatTime;
+    private float beatInterval;
+    private float beatTimer;
 
-    public static event Action OnBeat;
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
     void Start()
     {
         beatInterval = 60f / bpm;
-        nextBeatTime = beatInterval;
     }
 
     void Update()
     {
-        if (musicSource.isPlaying && musicSource.time >= nextBeatTime)
+        beatTimer += Time.deltaTime;
+        if (beatTimer >= beatInterval)
         {
-            LastBeatTime = Time.time;
-            OnBeat?.Invoke();
-            Debug.Log("BEAT!");
-            nextBeatTime += beatInterval;
+            beatTimer -= beatInterval;
+            TriggerBeat();
         }
     }
+
+    void TriggerBeat()
+    {
+        if (OnBeat != null) OnBeat.Invoke();
+    }
+
+    // --- BU FONKSİYONU EKLEDİK ---
+    // InputTiming'in ne kadar geciktiğimizi anlamasını sağlar
+    public float GetBeatTimer() { return beatTimer; }
+    public float GetBeatInterval() { return 60f / bpm; }
 }

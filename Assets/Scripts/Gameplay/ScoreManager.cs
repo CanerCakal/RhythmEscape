@@ -1,54 +1,61 @@
 using UnityEngine;
+using TMPro; // TextMeshPro kullanıyorsan bu satır önemli
 
 public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance;
 
-    public int Score { get; private set; }
-    public int Combo { get; private set; }
-    public int HighScore { get; private set; }
+    [Header("Skor Ayarları")]
+    public int currentScore = 0;
+    public int currentCombo = 0;
+    public int highScore = 0;
+
+    [Header("UI Referansları")]
+    public TextMeshProUGUI scoreText; // Unity içinde sürükle bırak yapmalısın
+    public TextMeshProUGUI comboText; // Unity içinde sürükle bırak yapmalısın
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
+
     private void Start()
     {
-        HighScore = PlayerPrefs.GetInt("HighScore", 0);
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        UpdateUI();
     }
 
-    public void AddScore(InputTiming.TimingResult result)
+    // InputTiming.cs bu fonksiyonu çağırıyor
+    public void ProcessHit(InputTiming.TimingResult result)
     {
-        switch (result)
+        if (result == InputTiming.TimingResult.PERFECT)
         {
-            case InputTiming.TimingResult.Perfect:
-                Score += 100;
-                Combo++;
-                break;
-
-            case InputTiming.TimingResult.Good:
-                Score += 50;
-                Combo++;
-                break;
-
-            case InputTiming.TimingResult.Miss:
-                Combo = 0;
-                break;
+            currentScore += 100;
+            currentCombo++;
+        }
+        else if (result == InputTiming.TimingResult.GOOD)
+        {
+            currentScore += 50;
+            currentCombo++;
+        }
+        else // MISS durumu
+        {
+            currentCombo = 0;
         }
 
-        if (Score > HighScore)
+        if (currentScore > highScore)
         {
-            HighScore = Score;
-            PlayerPrefs.SetInt("HighScore", HighScore);
+            highScore = currentScore;
+            PlayerPrefs.SetInt("HighScore", highScore);
         }
 
-        Debug.Log("Score: " + Score + " | Combo: " + Combo);
-
-        UIManager.Instance.UpdateScore(Score);
-        UIManager.Instance.UpdateCombo(Combo);
+        UpdateUI();
     }
 
+    void UpdateUI()
+    {
+        if (scoreText != null) scoreText.text = "Score: " + currentScore;
+        if (comboText != null) comboText.text = "Combo: " + currentCombo;
+    }
 }

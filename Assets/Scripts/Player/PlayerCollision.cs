@@ -17,8 +17,8 @@ public class PlayerCollision : MonoBehaviour
     {
         Time.timeScale = 0f;
         UIManager.Instance.ShowGameOver(
-            ScoreManager.Instance.Score,
-            ScoreManager.Instance.HighScore
+            ScoreManager.Instance.currentScore,
+            ScoreManager.Instance.highScore
         );
     }
 
