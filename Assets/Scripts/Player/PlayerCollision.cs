@@ -1,25 +1,19 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class PlayerCollision : MonoBehaviour
 {
-    private bool isDead = false;
-
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Obstacle") && !isDead)
+        if (other.CompareTag("Obstacle"))
         {
-            isDead = true;
-            GameOver();
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.GameOver();
+            }
+            else
+            {
+                Debug.LogWarning("GameManager sahnede bulunamadı.");
+            }
         }
     }
-    void GameOver()
-    {
-        Time.timeScale = 0f;
-        UIManager.Instance.ShowGameOver(
-            ScoreManager.Instance.currentScore,
-            ScoreManager.Instance.highScore
-        );
-    }
-
 }
