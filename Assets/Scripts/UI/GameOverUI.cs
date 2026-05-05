@@ -10,6 +10,8 @@ public class GameOverUI : MonoBehaviour
     [Header("Texts")]
     [SerializeField] private TextMeshProUGUI finalScoreText;
     [SerializeField] private TextMeshProUGUI finalComboText;
+    [SerializeField] private TextMeshProUGUI bestScoreText;
+    [SerializeField] private TextMeshProUGUI newRecordText;
 
     [Header("Buttons")]
     [SerializeField] private Button restartButton;
@@ -88,12 +90,18 @@ public class GameOverUI : MonoBehaviour
         }
 
         int finalScore = 0;
+        int bestScore = 0;
         int bestCombo = 0;
+        bool isNewRecord = false;
 
         if (ScoreManager.Instance != null)
         {
+            ScoreManager.Instance.SaveBestScoreIfNeeded();
+
             finalScore = ScoreManager.Instance.Score;
+            bestScore = ScoreManager.Instance.BestScore;
             bestCombo = ScoreManager.Instance.HighestCombo;
+            isNewRecord = ScoreManager.Instance.IsNewBestScore;
         }
 
         if (finalScoreText != null)
@@ -101,9 +109,20 @@ public class GameOverUI : MonoBehaviour
             finalScoreText.text = "Final Score: " + finalScore;
         }
 
+        if (bestScoreText != null)
+        {
+            bestScoreText.text = "Best Score: " + bestScore;
+        }
+
         if (finalComboText != null)
         {
             finalComboText.text = "Best Combo: x" + bestCombo;
+        }
+
+        if (newRecordText != null)
+        {
+            newRecordText.gameObject.SetActive(isNewRecord);
+            newRecordText.text = "NEW RECORD!";
         }
     }
 
@@ -112,6 +131,11 @@ public class GameOverUI : MonoBehaviour
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(false);
+        }
+
+        if (newRecordText != null)
+        {
+            newRecordText.gameObject.SetActive(false);
         }
     }
 

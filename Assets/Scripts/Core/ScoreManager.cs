@@ -5,6 +5,8 @@ public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance;
 
+    public const string BestScoreKey = "BestScore";
+
     [Header("Score Settings")]
     [SerializeField] private int correctMoveScore = 10;
     [SerializeField] private int comboBonusPerMove = 2;
@@ -19,11 +21,15 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private int combo = 0;
     [SerializeField] private int highestCombo = 0;
 
+    private bool isNewBestScore = false;
+
     public event Action<int, int, int> OnScoreChanged;
 
     public int Score => score;
     public int Combo => combo;
     public int HighestCombo => highestCombo;
+    public int BestScore => PlayerPrefs.GetInt(BestScoreKey, 0);
+    public bool IsNewBestScore => isNewBestScore;
 
     private void Awake()
     {
@@ -108,6 +114,35 @@ public class ScoreManager : MonoBehaviour
         Debug.Log("Engel başarıyla geçildi: +" + earnedScore);
 
         NotifyScoreChanged();
+    }
+
+    public void SaveBestScoreIfNeeded()
+    {
+        int currentBestScore = BestScore;
+
+        if (score > currentBestScore)
+        {
+            PlayerPrefs.SetInt(BestScoreKey, score);
+            PlayerPrefs.Save();
+
+            isNewBestScore = true;
+
+            Debug.Log("Yeni en yüksek skor: " + score);
+        }
+        else
+        {
+            isNewBestScore = false;
+        }
+    }
+
+    public void ResetBestScore()
+    {
+        PlayerPrefs.DeleteKey(BestScoreKey);
+        PlayerPrefs.Save();
+
+        isNewBestScore = false;
+
+        Debug.Log("Best Score sıfırlandı.");
     }
 
     private void NotifyScoreChanged()
