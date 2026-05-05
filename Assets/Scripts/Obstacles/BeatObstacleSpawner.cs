@@ -27,6 +27,10 @@ public class BeatObstacleSpawner : MonoBehaviour
     [Header("Pattern Spawn Settings")]
     [SerializeField] private List<ObstacleSpawnData> obstaclePattern = new List<ObstacleSpawnData>();
 
+    [Header("Infinite Spawn Settings")]
+    [SerializeField] private bool continueRandomAfterPatternEnds = true;
+    [SerializeField] private bool repeatPatternAfterEnd = false;
+
     [Header("Random Spawn Settings")]
     [SerializeField] private int firstSpawnBeat = 4;
     [SerializeField] private int spawnEveryBeats = 4;
@@ -34,14 +38,17 @@ public class BeatObstacleSpawner : MonoBehaviour
 
     private bool isSubscribed = false;
     private int lastLaneIndex = -1;
+    private int lastPatternBeatIndex = -1;
 
     private void Start()
     {
+        CalculateLastPatternBeatIndex();
         TrySubscribeToRhythmManager();
     }
 
     private void OnEnable()
     {
+        CalculateLastPatternBeatIndex();
         TrySubscribeToRhythmManager();
     }
 
@@ -105,13 +112,37 @@ public class BeatObstacleSpawner : MonoBehaviour
 
     private void SpawnFromPattern(int beatIndex)
     {
+        if (obstaclePattern == null || obstaclePattern.Count == 0)
+        {
+            SpawnRandomlyByBeat(beatIndex);
+            return;
+        }
+
+        bool spawnedFromPattern = false;
+
+        int checkedBeatIndex = beatIndex;
+
+        if (repeatPatternAfterEnd && lastPatternBeatIndex > 0)
+        {
+            checkedBeatIndex = beatIndex % (lastPatternBeatIndex + 1);
+        }
+
         for (int i = 0; i < obstaclePattern.Count; i++)
         {
             ObstacleSpawnData spawnData = obstaclePattern[i];
 
-            if (spawnData.beatIndex == beatIndex)
+            if (spawnData.beatIndex == checkedBeatIndex)
             {
                 SpawnObstacleAtLane(spawnData.laneIndex, beatIndex);
+                spawnedFromPattern = true;
+            }
+        }
+
+        if (!spawnedFromPattern && continueRandomAfterPatternEnds)
+        {
+            if (beatIndex > lastPatternBeatIndex)
+            {
+                SpawnRandomlyByBeat(beatIndex);
             }
         }
     }
@@ -176,8 +207,27 @@ public class BeatObstacleSpawner : MonoBehaviour
         lastLaneIndex = laneIndex;
         return laneIndex;
     }
+
+    private void CalculateLastPatternBeatIndex()
+    {
+        lastPatternBeatIndex = -1;
+
+        if (obstaclePattern == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < obstaclePattern.Count; i++)
+        {
+            if (obstaclePattern[i].beatIndex > lastPatternBeatIndex)
+            {
+                lastPatternBeatIndex = obstaclePattern[i].beatIndex;
+            }
+        }
+    }
+
     public void SetSpawnDistanceAhead(float newDistance)
-{
-    spawnDistanceAhead = newDistance;
-}
+    {
+        spawnDistanceAhead = newDistance;
+    }
 }
