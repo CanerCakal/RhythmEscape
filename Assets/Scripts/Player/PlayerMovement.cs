@@ -115,4 +115,9 @@ public class PlayerMovement : MonoBehaviour
     {
         forwardSpeed = newSpeed;
     }
+
+    public float GetForwardSpeed()
+    {
+        return forwardSpeed;
+    }
 }
