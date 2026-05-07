@@ -29,7 +29,7 @@ public class ScoreManager : MonoBehaviour
 
     public event Action<int, int, int> OnScoreChanged;
     public event Action<string, int> OnDodgeBonusAwarded;
-
+    public event Action OnObstaclePassed;
     public int Score => score;
     public int Combo => combo;
     public int HighestCombo => highestCombo;
@@ -112,24 +112,26 @@ public class ScoreManager : MonoBehaviour
     }
 
     public void AddObstaclePassedScore(int extraScore, string obstacleDisplayName)
+{
+    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
     {
-        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
-        {
-            return;
-        }
-
-        int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus) + extraScore;
-        score += earnedScore;
-
-        Debug.Log(obstacleDisplayName + " geçildi: +" + earnedScore);
-
-        NotifyScoreChanged();
-
-        if (extraScore > 0)
-        {
-            OnDodgeBonusAwarded?.Invoke(obstacleDisplayName.ToUpper() + " BONUS", extraScore);
-        }
+        return;
     }
+
+    int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus) + extraScore;
+    score += earnedScore;
+
+    Debug.Log(obstacleDisplayName + " geçildi: +" + earnedScore);
+
+    NotifyScoreChanged();
+
+    OnObstaclePassed?.Invoke();
+
+    if (extraScore > 0)
+    {
+        OnDodgeBonusAwarded?.Invoke(obstacleDisplayName.ToUpper() + " BONUS", extraScore);
+    }
+}
 
     public void AddNearMissBonus()
     {
