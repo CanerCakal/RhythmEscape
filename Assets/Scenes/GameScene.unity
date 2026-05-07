@@ -5161,6 +5161,11 @@ MonoBehaviour:
   completedTextDuration: 1.2
   punchScale: 1.15
   punchDuration: 0.15
+  audioSource: {fileID: 356590399}
+  questCompletedClip: {fileID: 0}
+  questPanel: {fileID: 2050719326}
+  panelPunchScale: 1.08
+  panelPunchDuration: 0.18
 --- !u!114 &2050719328
 MonoBehaviour:
   m_ObjectHideFlags: 0

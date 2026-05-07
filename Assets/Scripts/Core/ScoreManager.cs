@@ -112,26 +112,26 @@ public class ScoreManager : MonoBehaviour
     }
 
     public void AddObstaclePassedScore(int extraScore, string obstacleDisplayName)
-{
-    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
     {
-        return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus) + extraScore;
+        score += earnedScore;
+
+        Debug.Log(obstacleDisplayName + " geçildi: +" + earnedScore);
+
+        NotifyScoreChanged();
+
+        OnObstaclePassed?.Invoke();
+
+        if (extraScore > 0)
+        {
+            OnDodgeBonusAwarded?.Invoke(obstacleDisplayName.ToUpper() + " BONUS", extraScore);
+        }
     }
-
-    int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus) + extraScore;
-    score += earnedScore;
-
-    Debug.Log(obstacleDisplayName + " geçildi: +" + earnedScore);
-
-    NotifyScoreChanged();
-
-    OnObstaclePassed?.Invoke();
-
-    if (extraScore > 0)
-    {
-        OnDodgeBonusAwarded?.Invoke(obstacleDisplayName.ToUpper() + " BONUS", extraScore);
-    }
-}
 
     public void AddNearMissBonus()
     {
@@ -161,6 +161,24 @@ public class ScoreManager : MonoBehaviour
 
         NotifyScoreChanged();
         OnDodgeBonusAwarded?.Invoke("PERFECT DODGE", perfectDodgeBonusScore);
+    }
+    public void AddQuestRewardScore(int rewardScore, string questName)
+    {
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        if (rewardScore <= 0)
+        {
+            return;
+        }
+
+        score += rewardScore;
+
+        Debug.Log("Görev ödülü kazanıldı: " + questName + " +" + rewardScore);
+
+        NotifyScoreChanged();
     }
 
     public void SaveBestScoreIfNeeded()

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class QuestManager : MonoBehaviour
@@ -9,21 +8,34 @@ public class QuestManager : MonoBehaviour
     [Header("Player Reference")]
     [SerializeField] private Transform player;
 
-    [Header("Quest Settings")]
-    [SerializeField] private List<Quest> quests = new List<Quest>();
-
-    [Header("Next Quest Settings")]
+    [Header("Random Quest Settings")]
     [SerializeField] private float nextQuestDelay = 1.5f;
+    [SerializeField] private int minimumRewardScore = 75;
+    [SerializeField] private int maximumRewardScore = 250;
 
-    private int currentQuestIndex = 0;
-    private Quest currentQuest;
+    [Header("Distance Quest Settings")]
+    [SerializeField] private int minimumDistanceTarget = 100;
+    [SerializeField] private int maximumDistanceTarget = 300;
+
+    [Header("Rhythm Quest Settings")]
+    [SerializeField] private int minimumCorrectMoveTarget = 5;
+    [SerializeField] private int maximumCorrectMoveTarget = 15;
+
+    [Header("Obstacle Quest Settings")]
+    [SerializeField] private int minimumObstacleTarget = 3;
+    [SerializeField] private int maximumObstacleTarget = 10;
+
+    [Header("Current Quest")]
+    [SerializeField] private Quest currentQuest;
+
+    private QuestType lastQuestType;
+    private bool hasLastQuestType = false;
 
     private float questStartZ;
     private int lastDistanceProgress;
 
     public event Action<Quest> OnQuestUpdated;
     public event Action<Quest> OnQuestCompleted;
-    public event Action OnAllQuestsCompleted;
 
     private void Awake()
     {
@@ -58,8 +70,7 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
-        CreateDefaultQuestsIfNeeded();
-        StartQuest(0);
+        GenerateNewRandomQuest();
     }
 
     private void Update()
@@ -75,56 +86,125 @@ public class QuestManager : MonoBehaviour
         TrackDistanceQuest();
     }
 
-    private void CreateDefaultQuestsIfNeeded()
+    private void GenerateNewRandomQuest()
     {
-        if (quests.Count > 0)
-        {
-            return;
-        }
+        QuestType randomQuestType = GetRandomQuestType();
 
-        quests.Add(new Quest(
-            "İlk Ritim",
-            "5 kez doğru ritimde hareket et.",
-            QuestType.CorrectRhythmMoves,
-            5
-        ));
+        currentQuest = CreateQuestByType(randomQuestType);
 
-        quests.Add(new Quest(
-            "Yola Devam",
-            "150 metre ilerle.",
-            QuestType.Distance,
-            150
-        ));
-
-        quests.Add(new Quest(
-            "Engelleri Aş",
-            "5 engeli başarıyla geç.",
-            QuestType.ObstaclesPassed,
-            5
-        ));
-    }
-
-    private void StartQuest(int questIndex)
-    {
-        if (questIndex >= quests.Count)
-        {
-            currentQuest = null;
-            OnAllQuestsCompleted?.Invoke();
-            Debug.Log("Tüm görevler tamamlandı.");
-            return;
-        }
-
-        currentQuestIndex = questIndex;
-        currentQuest = quests[currentQuestIndex];
-
-        currentQuest.currentAmount = 0;
-        currentQuest.isCompleted = false;
+        lastQuestType = randomQuestType;
+        hasLastQuestType = true;
 
         ResetDistanceTracking();
 
-        Debug.Log("Yeni görev başladı: " + currentQuest.questName);
+        Debug.Log("Yeni rastgele görev: " + currentQuest.questName);
 
         OnQuestUpdated?.Invoke(currentQuest);
+    }
+
+    private QuestType GetRandomQuestType()
+    {
+        int questTypeCount = Enum.GetValues(typeof(QuestType)).Length;
+
+        QuestType randomType = (QuestType)UnityEngine.Random.Range(0, questTypeCount);
+
+        if (!hasLastQuestType)
+        {
+            return randomType;
+        }
+
+        int safetyCounter = 0;
+
+        while (randomType == lastQuestType && safetyCounter < 10)
+        {
+            randomType = (QuestType)UnityEngine.Random.Range(0, questTypeCount);
+            safetyCounter++;
+        }
+
+        return randomType;
+    }
+
+    private Quest CreateQuestByType(QuestType questType)
+    {
+        switch (questType)
+        {
+            case QuestType.Distance:
+                return CreateDistanceQuest();
+
+            case QuestType.CorrectRhythmMoves:
+                return CreateCorrectRhythmQuest();
+
+            case QuestType.ObstaclesPassed:
+                return CreateObstacleQuest();
+
+            default:
+                return CreateDistanceQuest();
+        }
+    }
+
+    private Quest CreateDistanceQuest()
+    {
+        int targetAmount = UnityEngine.Random.Range(
+            minimumDistanceTarget,
+            maximumDistanceTarget + 1
+        );
+
+        int rewardScore = CalculateRewardScore(targetAmount, 1);
+
+        return new Quest(
+            "Yola Devam",
+            targetAmount + " metre ilerle.",
+            QuestType.Distance,
+            targetAmount,
+            rewardScore
+        );
+    }
+
+    private Quest CreateCorrectRhythmQuest()
+    {
+        int targetAmount = UnityEngine.Random.Range(
+            minimumCorrectMoveTarget,
+            maximumCorrectMoveTarget + 1
+        );
+
+        int rewardScore = CalculateRewardScore(targetAmount, 12);
+
+        return new Quest(
+            "Ritmi Yakala",
+            targetAmount + " kez doğru ritimde hareket et.",
+            QuestType.CorrectRhythmMoves,
+            targetAmount,
+            rewardScore
+        );
+    }
+
+    private Quest CreateObstacleQuest()
+    {
+        int targetAmount = UnityEngine.Random.Range(
+            minimumObstacleTarget,
+            maximumObstacleTarget + 1
+        );
+
+        int rewardScore = CalculateRewardScore(targetAmount, 20);
+
+        return new Quest(
+            "Engelleri Aş",
+            targetAmount + " engeli başarıyla geç.",
+            QuestType.ObstaclesPassed,
+            targetAmount,
+            rewardScore
+        );
+    }
+
+    private int CalculateRewardScore(int targetAmount, int multiplier)
+    {
+        int calculatedReward = targetAmount * multiplier;
+
+        return Mathf.Clamp(
+            calculatedReward,
+            minimumRewardScore,
+            maximumRewardScore
+        );
     }
 
     private void ResetDistanceTracking()
@@ -238,14 +318,17 @@ public class QuestManager : MonoBehaviour
     {
         Debug.Log("Görev tamamlandı: " + currentQuest.questName);
 
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddQuestRewardScore(
+                currentQuest.rewardScore,
+                currentQuest.questName
+            );
+        }
+
         OnQuestCompleted?.Invoke(currentQuest);
 
-        Invoke(nameof(StartNextQuest), nextQuestDelay);
-    }
-
-    private void StartNextQuest()
-    {
-        StartQuest(currentQuestIndex + 1);
+        Invoke(nameof(GenerateNewRandomQuest), nextQuestDelay);
     }
 
     public Quest GetCurrentQuest()

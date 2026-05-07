@@ -19,16 +19,18 @@ public class Quest
     public QuestType questType;
     public int targetAmount;
     public int currentAmount;
+    public int rewardScore;
 
     [Header("Quest State")]
     public bool isCompleted;
 
-    public Quest(string questName, string description, QuestType questType, int targetAmount)
+    public Quest(string questName, string description, QuestType questType, int targetAmount, int rewardScore)
     {
         this.questName = questName;
         this.description = description;
         this.questType = questType;
         this.targetAmount = targetAmount;
+        this.rewardScore = rewardScore;
 
         currentAmount = 0;
         isCompleted = false;

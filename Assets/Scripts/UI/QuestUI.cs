@@ -15,17 +15,33 @@ public class QuestUI : MonoBehaviour
     [SerializeField] private float punchScale = 1.15f;
     [SerializeField] private float punchDuration = 0.15f;
 
+    [Header("Quest Complete Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip questCompletedClip;
+
+    [Header("Panel Animation")]
+    [SerializeField] private RectTransform questPanel;
+    [SerializeField] private float panelPunchScale = 1.08f;
+    [SerializeField] private float panelPunchDuration = 0.18f;
+
     private bool isSubscribed = false;
 
     private Vector3 titleOriginalScale;
     private Coroutine punchCoroutine;
     private Coroutine completedTextCoroutine;
+    private Vector3 panelOriginalScale;
+    private Coroutine panelPunchCoroutine;
 
     private void Awake()
     {
         if (questTitleText != null)
         {
             titleOriginalScale = questTitleText.transform.localScale;
+        }
+
+        if (questPanel != null)
+        {
+            panelOriginalScale = questPanel.localScale;
         }
 
         if (questCompletedText != null)
@@ -50,7 +66,6 @@ public class QuestUI : MonoBehaviour
         {
             QuestManager.Instance.OnQuestUpdated -= UpdateQuestUI;
             QuestManager.Instance.OnQuestCompleted -= ShowCompletedText;
-            QuestManager.Instance.OnAllQuestsCompleted -= ShowAllQuestsCompleted;
             isSubscribed = false;
         }
     }
@@ -77,7 +92,6 @@ public class QuestUI : MonoBehaviour
 
         QuestManager.Instance.OnQuestUpdated += UpdateQuestUI;
         QuestManager.Instance.OnQuestCompleted += ShowCompletedText;
-        QuestManager.Instance.OnAllQuestsCompleted += ShowAllQuestsCompleted;
 
         isSubscribed = true;
 
@@ -118,6 +132,9 @@ public class QuestUI : MonoBehaviour
 
     private void ShowCompletedText(Quest quest)
     {
+        PlayQuestCompletedSound();
+        PlayPanelPunch();
+
         if (questCompletedText == null)
         {
             return;
@@ -128,41 +145,46 @@ public class QuestUI : MonoBehaviour
             StopCoroutine(completedTextCoroutine);
         }
 
-        completedTextCoroutine = StartCoroutine(CompletedTextRoutine());
+        completedTextCoroutine = StartCoroutine(CompletedTextRoutine(quest));
     }
 
-    private IEnumerator CompletedTextRoutine()
+    private IEnumerator CompletedTextRoutine(Quest quest)
     {
         questCompletedText.gameObject.SetActive(true);
-        questCompletedText.text = "GÖREV TAMAMLANDI!";
+        questCompletedText.text = "GÖREV TAMAMLANDI!\n+" + quest.rewardScore + " SCORE";
+
+        Vector3 originalScale = Vector3.one;
+        Vector3 startScale = Vector3.one * 1.25f;
+
+        questCompletedText.transform.localScale = startScale;
 
         float timer = 0f;
 
         while (timer < completedTextDuration)
         {
             timer += Time.unscaledDeltaTime;
+
+            float t = timer / completedTextDuration;
+
+            questCompletedText.transform.localScale = Vector3.Lerp(
+                startScale,
+                originalScale,
+                t
+            );
+
+            Color currentColor = questCompletedText.color;
+            currentColor.a = Mathf.Lerp(1f, 0f, t);
+            questCompletedText.color = currentColor;
+
             yield return null;
         }
 
+        Color resetColor = questCompletedText.color;
+        resetColor.a = 1f;
+        questCompletedText.color = resetColor;
+
+        questCompletedText.transform.localScale = originalScale;
         questCompletedText.gameObject.SetActive(false);
-    }
-
-    private void ShowAllQuestsCompleted()
-    {
-        if (questTitleText != null)
-        {
-            questTitleText.text = "Tüm Görevler Tamamlandı!";
-        }
-
-        if (questDescriptionText != null)
-        {
-            questDescriptionText.text = "Harika ilerledin.";
-        }
-
-        if (questProgressText != null)
-        {
-            questProgressText.text = "";
-        }
     }
 
     private void PlayTitlePunch()
@@ -202,5 +224,57 @@ public class QuestUI : MonoBehaviour
         }
 
         questTitleText.transform.localScale = titleOriginalScale;
+    }
+    private void PlayQuestCompletedSound()
+    {
+        if (audioSource == null)
+        {
+            return;
+        }
+
+        if (questCompletedClip == null)
+        {
+            return;
+        }
+
+        audioSource.PlayOneShot(questCompletedClip);
+    }
+    private void PlayPanelPunch()
+    {
+        if (questPanel == null)
+        {
+            return;
+        }
+
+        if (panelPunchCoroutine != null)
+        {
+            StopCoroutine(panelPunchCoroutine);
+        }
+
+        panelPunchCoroutine = StartCoroutine(PanelPunchRoutine());
+    }
+
+    private IEnumerator PanelPunchRoutine()
+    {
+        questPanel.localScale = panelOriginalScale * panelPunchScale;
+
+        float timer = 0f;
+
+        while (timer < panelPunchDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+
+            float t = timer / panelPunchDuration;
+
+            questPanel.localScale = Vector3.Lerp(
+                panelOriginalScale * panelPunchScale,
+                panelOriginalScale,
+                t
+            );
+
+            yield return null;
+        }
+
+        questPanel.localScale = panelOriginalScale;
     }
 }
