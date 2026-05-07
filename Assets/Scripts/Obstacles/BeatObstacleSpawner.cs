@@ -434,4 +434,41 @@ public class BeatObstacleSpawner : MonoBehaviour
     {
         spawnDistanceAhead = newDistance;
     }
+    public float GetSpawnDistanceAhead()
+    {
+        return spawnDistanceAhead;
+    }
+    public void SetFirstSpawnBeat(int newFirstSpawnBeat)
+    {
+        firstSpawnBeat = Mathf.Max(0, newFirstSpawnBeat);
+    }
+
+    public void SetSpawnEveryBeats(int newSpawnEveryBeats)
+    {
+        spawnEveryBeats = Mathf.Max(1, newSpawnEveryBeats);
+    }
+    public int GetSpawnEveryBeats()
+    {
+        return spawnEveryBeats;
+    }
+
+    public void SetAvoidSameLaneTwice(bool value)
+    {
+        avoidSameLaneTwice = value;
+    }
+
+    public void SetUsePatternSpawning(bool value)
+    {
+        usePatternSpawning = value;
+    }
+
+    public void SetContinueRandomAfterPatternEnds(bool value)
+    {
+        continueRandomAfterPatternEnds = value;
+    }
+
+    public void SetRepeatPatternAfterEnd(bool value)
+    {
+        repeatPatternAfterEnd = value;
+    }
 }

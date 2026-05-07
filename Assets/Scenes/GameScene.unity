@@ -2237,6 +2237,24 @@ MonoBehaviour:
   playerMovement: {fileID: 680687054}
   rhythmManager: {fileID: 1415821361}
   obstacleSpawner: {fileID: 1617821428}
+  easyForwardSpeed: 4.3
+  easyBeatTolerance: 0.24
+  easySpawnDistanceAhead: 38
+  easyFirstSpawnBeat: 6
+  easySpawnEveryBeats: 5
+  easyAvoidSameLaneTwice: 1
+  normalForwardSpeed: 5.5
+  normalBeatTolerance: 0.16
+  normalSpawnDistanceAhead: 35
+  normalFirstSpawnBeat: 4
+  normalSpawnEveryBeats: 4
+  normalAvoidSameLaneTwice: 1
+  hardForwardSpeed: 7.2
+  hardBeatTolerance: 0.1
+  hardSpawnDistanceAhead: 42
+  hardFirstSpawnBeat: 3
+  hardSpawnEveryBeats: 3
+  hardAvoidSameLaneTwice: 0
 --- !u!4 &819273479
 Transform:
   m_ObjectHideFlags: 0
@@ -2247,6 +2265,68 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.51671, y: 1.95866, z: -7.49247}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &850978914
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 850978916}
+  - component: {fileID: 850978915}
+  m_Layer: 0
+  m_Name: DynamicDifficultyScaler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &850978915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 850978914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e102b525f32a454f96b94c665e7ed60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DynamicDifficultyScaler
+  playerMovement: {fileID: 680687054}
+  rhythmManager: {fileID: 1415821361}
+  obstacleSpawner: {fileID: 1617821428}
+  difficultyManager: {fileID: 819273478}
+  enableDynamicScaling: 1
+  increaseInterval: 8
+  speedIncreaseAmount: 0.25
+  easyMaxSpeed: 6.2
+  normalMaxSpeed: 7.6
+  hardMaxSpeed: 9
+  toleranceDecreaseAmount: 0.01
+  easyMinBeatTolerance: 0.16
+  normalMinBeatTolerance: 0.11
+  hardMinBeatTolerance: 0.075
+  reduceSpawnEveryBeatsEveryLevel: 2
+  minimumSpawnEveryBeats: 2
+  difficultyLevel: 0
+  survivedTime: 0
+--- !u!4 &850978916
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 850978914}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 472.00006, y: 246.50188, z: -0.00002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2282,8 +2362,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestManager
   player: {fileID: 680687058}
-  quests: []
   nextQuestDelay: 1.5
+  minimumRewardScore: 75
+  maximumRewardScore: 400
+  minimumDistanceTarget: 100
+  maximumDistanceTarget: 300
+  minimumCorrectMoveTarget: 5
+  maximumCorrectMoveTarget: 15
+  minimumObstacleTarget: 3
+  maximumObstacleTarget: 10
+  currentQuest:
+    questName: 
+    description: 
+    questType: 0
+    targetAmount: 0
+    currentAmount: 0
+    rewardScore: 0
+    isCompleted: 0
+  difficultyManager: {fileID: 819273478}
 --- !u!4 &854057017
 Transform:
   m_ObjectHideFlags: 0
@@ -5370,3 +5466,4 @@ SceneRoots:
   - {fileID: 819273479}
   - {fileID: 954444443}
   - {fileID: 854057017}
+  - {fileID: 850978916}

@@ -28,6 +28,9 @@ public class QuestManager : MonoBehaviour
     [Header("Current Quest")]
     [SerializeField] private Quest currentQuest;
 
+    [Header("Difficulty Reference")]
+    [SerializeField] private DifficultyManager difficultyManager;
+
     private QuestType lastQuestType;
     private bool hasLastQuestType = false;
 
@@ -149,6 +152,8 @@ public class QuestManager : MonoBehaviour
             maximumDistanceTarget + 1
         );
 
+        targetAmount = ApplyDifficultyToTarget(targetAmount);
+
         int rewardScore = CalculateRewardScore(targetAmount, 1);
 
         return new Quest(
@@ -166,6 +171,8 @@ public class QuestManager : MonoBehaviour
             minimumCorrectMoveTarget,
             maximumCorrectMoveTarget + 1
         );
+
+        targetAmount = ApplyDifficultyToTarget(targetAmount);
 
         int rewardScore = CalculateRewardScore(targetAmount, 12);
 
@@ -185,6 +192,8 @@ public class QuestManager : MonoBehaviour
             maximumObstacleTarget + 1
         );
 
+        targetAmount = ApplyDifficultyToTarget(targetAmount);
+
         int rewardScore = CalculateRewardScore(targetAmount, 20);
 
         return new Quest(
@@ -199,6 +208,20 @@ public class QuestManager : MonoBehaviour
     private int CalculateRewardScore(int targetAmount, int multiplier)
     {
         int calculatedReward = targetAmount * multiplier;
+
+        if (difficultyManager != null)
+        {
+            switch (difficultyManager.SelectedDifficulty)
+            {
+                case GameDifficulty.Easy:
+                    calculatedReward = Mathf.RoundToInt(calculatedReward * 0.85f);
+                    break;
+
+                case GameDifficulty.Hard:
+                    calculatedReward = Mathf.RoundToInt(calculatedReward * 1.35f);
+                    break;
+            }
+        }
 
         return Mathf.Clamp(
             calculatedReward,
@@ -334,5 +357,24 @@ public class QuestManager : MonoBehaviour
     public Quest GetCurrentQuest()
     {
         return currentQuest;
+    }
+    private int ApplyDifficultyToTarget(int baseTarget)
+    {
+        if (difficultyManager == null)
+        {
+            return baseTarget;
+        }
+
+        switch (difficultyManager.SelectedDifficulty)
+        {
+            case GameDifficulty.Easy:
+                return Mathf.Max(1, Mathf.RoundToInt(baseTarget * 0.8f));
+
+            case GameDifficulty.Hard:
+                return Mathf.Max(1, Mathf.RoundToInt(baseTarget * 1.25f));
+
+            default:
+                return baseTarget;
+        }
     }
 }

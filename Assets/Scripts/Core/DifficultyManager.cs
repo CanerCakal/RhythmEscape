@@ -20,6 +20,32 @@ public class DifficultyManager : MonoBehaviour
     [SerializeField] private RhythmManager rhythmManager;
     [SerializeField] private BeatObstacleSpawner obstacleSpawner;
 
+    [Header("Easy Settings")]
+    [SerializeField] private float easyForwardSpeed = 4.3f;
+    [SerializeField] private float easyBeatTolerance = 0.24f;
+    [SerializeField] private float easySpawnDistanceAhead = 38f;
+    [SerializeField] private int easyFirstSpawnBeat = 6;
+    [SerializeField] private int easySpawnEveryBeats = 5;
+    [SerializeField] private bool easyAvoidSameLaneTwice = true;
+
+    [Header("Normal Settings")]
+    [SerializeField] private float normalForwardSpeed = 5.5f;
+    [SerializeField] private float normalBeatTolerance = 0.16f;
+    [SerializeField] private float normalSpawnDistanceAhead = 35f;
+    [SerializeField] private int normalFirstSpawnBeat = 4;
+    [SerializeField] private int normalSpawnEveryBeats = 4;
+    [SerializeField] private bool normalAvoidSameLaneTwice = true;
+
+    [Header("Hard Settings")]
+    [SerializeField] private float hardForwardSpeed = 7.2f;
+    [SerializeField] private float hardBeatTolerance = 0.10f;
+    [SerializeField] private float hardSpawnDistanceAhead = 42f;
+    [SerializeField] private int hardFirstSpawnBeat = 3;
+    [SerializeField] private int hardSpawnEveryBeats = 3;
+    [SerializeField] private bool hardAvoidSameLaneTwice = false;
+
+    public GameDifficulty SelectedDifficulty => selectedDifficulty;
+
     private void Start()
     {
         LoadDifficulty();
@@ -73,55 +99,81 @@ public class DifficultyManager : MonoBehaviour
 
     private void ApplyEasySettings()
     {
-        if (playerMovement != null)
-        {
-            playerMovement.SetForwardSpeed(4.5f);
-        }
+        ApplyPlayerAndRhythmSettings(
+            easyForwardSpeed,
+            easyBeatTolerance
+        );
 
-        if (rhythmManager != null)
-        {
-            rhythmManager.SetBeatTolerance(0.22f);
-        }
-
-        if (obstacleSpawner != null)
-        {
-            obstacleSpawner.SetSpawnDistanceAhead(38f);
-        }
+        ApplyObstacleSettings(
+            easySpawnDistanceAhead,
+            easyFirstSpawnBeat,
+            easySpawnEveryBeats,
+            easyAvoidSameLaneTwice
+        );
     }
 
     private void ApplyNormalSettings()
     {
-        if (playerMovement != null)
-        {
-            playerMovement.SetForwardSpeed(5.5f);
-        }
+        ApplyPlayerAndRhythmSettings(
+            normalForwardSpeed,
+            normalBeatTolerance
+        );
 
-        if (rhythmManager != null)
-        {
-            rhythmManager.SetBeatTolerance(0.16f);
-        }
-
-        if (obstacleSpawner != null)
-        {
-            obstacleSpawner.SetSpawnDistanceAhead(35f);
-        }
+        ApplyObstacleSettings(
+            normalSpawnDistanceAhead,
+            normalFirstSpawnBeat,
+            normalSpawnEveryBeats,
+            normalAvoidSameLaneTwice
+        );
     }
 
     private void ApplyHardSettings()
     {
+        ApplyPlayerAndRhythmSettings(
+            hardForwardSpeed,
+            hardBeatTolerance
+        );
+
+        ApplyObstacleSettings(
+            hardSpawnDistanceAhead,
+            hardFirstSpawnBeat,
+            hardSpawnEveryBeats,
+            hardAvoidSameLaneTwice
+        );
+    }
+
+    private void ApplyPlayerAndRhythmSettings(float forwardSpeed, float beatTolerance)
+    {
         if (playerMovement != null)
         {
-            playerMovement.SetForwardSpeed(7f);
+            playerMovement.SetForwardSpeed(forwardSpeed);
         }
 
         if (rhythmManager != null)
         {
-            rhythmManager.SetBeatTolerance(0.10f);
+            rhythmManager.SetBeatTolerance(beatTolerance);
+        }
+    }
+
+    private void ApplyObstacleSettings(
+        float spawnDistanceAhead,
+        int firstSpawnBeat,
+        int spawnEveryBeats,
+        bool avoidSameLaneTwice
+    )
+    {
+        if (obstacleSpawner == null)
+        {
+            return;
         }
 
-        if (obstacleSpawner != null)
-        {
-            obstacleSpawner.SetSpawnDistanceAhead(42f);
-        }
+        obstacleSpawner.SetSpawnDistanceAhead(spawnDistanceAhead);
+        obstacleSpawner.SetFirstSpawnBeat(firstSpawnBeat);
+        obstacleSpawner.SetSpawnEveryBeats(spawnEveryBeats);
+        obstacleSpawner.SetAvoidSameLaneTwice(avoidSameLaneTwice);
+
+        obstacleSpawner.SetUsePatternSpawning(true);
+        obstacleSpawner.SetContinueRandomAfterPatternEnds(true);
+        obstacleSpawner.SetRepeatPatternAfterEnd(false);
     }
 }

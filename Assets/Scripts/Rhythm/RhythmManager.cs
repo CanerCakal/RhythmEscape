@@ -92,7 +92,11 @@ public class RhythmManager : MonoBehaviour
         return secondsPerBeat;
     }
     public void SetBeatTolerance(float newTolerance)
-{
-    beatTolerance = newTolerance;
-}
+    {
+        beatTolerance = newTolerance;
+    }
+    public float GetBeatTolerance()
+    {
+        return beatTolerance;
+    }
 }
