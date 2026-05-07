@@ -12,6 +12,9 @@ public class ScoreUI : MonoBehaviour
     [Header("Speed Boost Text")]
     [SerializeField] private TextMeshProUGUI speedBoostText;
 
+    [Header("Dodge Bonus Text")]
+    [SerializeField] private TextMeshProUGUI dodgeBonusText;
+
     [Header("Combo Animation Settings")]
     [SerializeField] private float comboPunchScale = 1.25f;
     [SerializeField] private float comboPunchDuration = 0.15f;
@@ -20,20 +23,30 @@ public class ScoreUI : MonoBehaviour
     [SerializeField] private int minComboForSpeedBoostText = 5;
     [SerializeField] private float speedBoostTextDuration = 0.6f;
 
+    [Header("Dodge Bonus Popup Settings")]
+    [SerializeField] private float dodgeBonusTextDuration = 0.75f;
+    [SerializeField] private float dodgeBonusMoveUpDistance = 45f;
+    [SerializeField] private float dodgeBonusPunchScale = 1.25f;
+
     [Header("Colors")]
     [SerializeField] private Color normalComboColor = Color.white;
     [SerializeField] private Color boostedComboColor = Color.cyan;
     [SerializeField] private Color wrongComboColor = Color.red;
+    [SerializeField] private Color nearMissColor = Color.yellow;
+    [SerializeField] private Color perfectDodgeColor = Color.cyan;
 
     private bool isSubscribed = false;
 
     private int previousCombo = 0;
 
     private Vector3 comboOriginalScale;
+    private Vector3 dodgeBonusOriginalPosition;
+    private Vector3 dodgeBonusOriginalScale;
 
     private Coroutine comboPunchCoroutine;
     private Coroutine speedBoostCoroutine;
     private Coroutine wrongComboCoroutine;
+    private Coroutine dodgeBonusCoroutine;
 
     private void Awake()
     {
@@ -46,6 +59,13 @@ public class ScoreUI : MonoBehaviour
         if (speedBoostText != null)
         {
             speedBoostText.gameObject.SetActive(false);
+        }
+
+        if (dodgeBonusText != null)
+        {
+            dodgeBonusOriginalPosition = dodgeBonusText.transform.localPosition;
+            dodgeBonusOriginalScale = dodgeBonusText.transform.localScale;
+            dodgeBonusText.gameObject.SetActive(false);
         }
     }
 
@@ -65,6 +85,7 @@ public class ScoreUI : MonoBehaviour
         if (ScoreManager.Instance != null && isSubscribed)
         {
             ScoreManager.Instance.OnScoreChanged -= UpdateUI;
+            ScoreManager.Instance.OnDodgeBonusAwarded -= PlayDodgeBonusText;
             isSubscribed = false;
         }
     }
@@ -90,6 +111,7 @@ public class ScoreUI : MonoBehaviour
         }
 
         ScoreManager.Instance.OnScoreChanged += UpdateUI;
+        ScoreManager.Instance.OnDodgeBonusAwarded += PlayDodgeBonusText;
         isSubscribed = true;
 
         UpdateUI(
@@ -257,5 +279,68 @@ public class ScoreUI : MonoBehaviour
         }
 
         comboText.color = normalComboColor;
+    }
+
+    private void PlayDodgeBonusText(string bonusName, int bonusScore)
+    {
+        if (dodgeBonusText == null)
+        {
+            return;
+        }
+
+        if (dodgeBonusCoroutine != null)
+        {
+            StopCoroutine(dodgeBonusCoroutine);
+        }
+
+        dodgeBonusCoroutine = StartCoroutine(DodgeBonusTextRoutine(bonusName, bonusScore));
+    }
+
+    private IEnumerator DodgeBonusTextRoutine(string bonusName, int bonusScore)
+    {
+        dodgeBonusText.gameObject.SetActive(true);
+        dodgeBonusText.text = bonusName + " +" + bonusScore;
+
+        if (bonusName == "PERFECT DODGE")
+        {
+            dodgeBonusText.color = perfectDodgeColor;
+        }
+        else
+        {
+            dodgeBonusText.color = nearMissColor;
+        }
+
+        dodgeBonusText.transform.localPosition = dodgeBonusOriginalPosition;
+        dodgeBonusText.transform.localScale = dodgeBonusOriginalScale * dodgeBonusPunchScale;
+
+        Vector3 startPosition = dodgeBonusOriginalPosition;
+        Vector3 endPosition = dodgeBonusOriginalPosition + new Vector3(0f, dodgeBonusMoveUpDistance, 0f);
+
+        float timer = 0f;
+
+        while (timer < dodgeBonusTextDuration)
+        {
+            timer += Time.unscaledDeltaTime;
+
+            float t = timer / dodgeBonusTextDuration;
+
+            dodgeBonusText.transform.localPosition = Vector3.Lerp(
+                startPosition,
+                endPosition,
+                t
+            );
+
+            dodgeBonusText.transform.localScale = Vector3.Lerp(
+                dodgeBonusOriginalScale * dodgeBonusPunchScale,
+                dodgeBonusOriginalScale,
+                t
+            );
+
+            yield return null;
+        }
+
+        dodgeBonusText.transform.localPosition = dodgeBonusOriginalPosition;
+        dodgeBonusText.transform.localScale = dodgeBonusOriginalScale;
+        dodgeBonusText.gameObject.SetActive(false);
     }
 }

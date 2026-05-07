@@ -28,14 +28,39 @@ public class RoadSegmentVisual : MonoBehaviour
     [SerializeField] private Color neonNormalColor = new Color(0f, 0.8f, 1f);
     [SerializeField] private Color neonBeatColor = Color.white;
 
+    [Header("Combo Atmosphere Colors")]
+    [SerializeField] private bool useComboAtmosphere = true;
+    [SerializeField] private int comboLevelOne = 5;
+    [SerializeField] private int comboLevelTwo = 10;
+    [SerializeField] private int comboLevelThree = 20;
+
+    [SerializeField] private Color comboLevelOneNeonColor = new Color(0f, 1f, 1f);
+    [SerializeField] private Color comboLevelTwoNeonColor = new Color(1f, 0f, 1f);
+    [SerializeField] private Color comboLevelThreeNeonColor = new Color(1f, 0.75f, 0f);
+
+    [SerializeField] private Color comboLevelOneRoadColor = new Color(0.10f, 0.16f, 0.18f);
+    [SerializeField] private Color comboLevelTwoRoadColor = new Color(0.16f, 0.10f, 0.20f);
+    [SerializeField] private Color comboLevelThreeRoadColor = new Color(0.20f, 0.16f, 0.08f);
+
     [Header("Beat Reaction")]
     [SerializeField] private float returnSpeed = 6f;
 
+    [Header("Beat Scale Pulse")]
+    [SerializeField] private bool useBeatScalePulse = true;
+    [SerializeField] private float neonBeatScale = 1.15f;
+    [SerializeField] private float comboExtraPulseAmount = 0.2f;
+    [SerializeField] private float scaleReturnSpeed = 8f;
+
     private Renderer roadRenderer;
     private readonly List<Renderer> neonRenderers = new List<Renderer>();
+    private readonly List<Transform> neonTransforms = new List<Transform>();
+    private readonly List<Vector3> neonOriginalScales = new List<Vector3>();
 
     private bool visualsCreated = false;
-    private bool isSubscribed = false;
+    private bool rhythmSubscribed = false;
+    private bool scoreSubscribed = false;
+
+    private int currentCombo = 0;
 
     private void Awake()
     {
@@ -55,36 +80,46 @@ public class RoadSegmentVisual : MonoBehaviour
         }
 
         TrySubscribeToRhythmManager();
+        TrySubscribeToScoreManager();
     }
 
     private void OnEnable()
     {
         TrySubscribeToRhythmManager();
+        TrySubscribeToScoreManager();
     }
 
     private void OnDisable()
     {
         UnsubscribeFromRhythmManager();
+        UnsubscribeFromScoreManager();
     }
 
     private void OnDestroy()
     {
         UnsubscribeFromRhythmManager();
+        UnsubscribeFromScoreManager();
     }
 
     private void Update()
     {
-        if (!isSubscribed)
+        if (!rhythmSubscribed)
         {
             TrySubscribeToRhythmManager();
         }
 
+        if (!scoreSubscribed)
+        {
+            TrySubscribeToScoreManager();
+        }
+
         UpdateColors();
+        UpdateScales();
     }
 
     private void TrySubscribeToRhythmManager()
     {
-        if (isSubscribed)
+        if (rhythmSubscribed)
         {
             return;
         }
@@ -95,15 +130,42 @@ public class RoadSegmentVisual : MonoBehaviour
         }
 
         RhythmManager.Instance.OnBeat += HandleBeat;
-        isSubscribed = true;
+        rhythmSubscribed = true;
+    }
+
+    private void TrySubscribeToScoreManager()
+    {
+        if (scoreSubscribed)
+        {
+            return;
+        }
+
+        if (ScoreManager.Instance == null)
+        {
+            return;
+        }
+
+        ScoreManager.Instance.OnScoreChanged += HandleScoreChanged;
+        scoreSubscribed = true;
+
+        currentCombo = ScoreManager.Instance.Combo;
     }
 
     private void UnsubscribeFromRhythmManager()
     {
-        if (RhythmManager.Instance != null && isSubscribed)
+        if (RhythmManager.Instance != null && rhythmSubscribed)
         {
             RhythmManager.Instance.OnBeat -= HandleBeat;
-            isSubscribed = false;
+            rhythmSubscribed = false;
+        }
+    }
+
+    private void UnsubscribeFromScoreManager()
+    {
+        if (ScoreManager.Instance != null && scoreSubscribed)
+        {
+            ScoreManager.Instance.OnScoreChanged -= HandleScoreChanged;
+            scoreSubscribed = false;
         }
     }
 
@@ -137,8 +199,8 @@ public class RoadSegmentVisual : MonoBehaviour
             segmentLength
         );
 
-        GameObject barrier = CreateVisualCube(objectName, worldPosition, worldScale, neonNormalColor);
-        neonRenderers.Add(barrier.GetComponent<Renderer>());
+        GameObject barrier = CreateVisualCube(objectName, worldPosition, worldScale, GetCurrentNeonBaseColor());
+        AddNeonVisual(barrier);
     }
 
     private void CreateLaneLine(string objectName, float xPosition)
@@ -155,8 +217,8 @@ public class RoadSegmentVisual : MonoBehaviour
             segmentLength
         );
 
-        GameObject laneLine = CreateVisualCube(objectName, worldPosition, worldScale, neonNormalColor);
-        neonRenderers.Add(laneLine.GetComponent<Renderer>());
+        GameObject laneLine = CreateVisualCube(objectName, worldPosition, worldScale, GetCurrentNeonBaseColor());
+        AddNeonVisual(laneLine);
     }
 
     private GameObject CreateVisualCube(string objectName, Vector3 worldPosition, Vector3 worldScale, Color color)
@@ -186,19 +248,84 @@ public class RoadSegmentVisual : MonoBehaviour
         return visualObject;
     }
 
+    private void AddNeonVisual(GameObject visualObject)
+    {
+        if (visualObject == null)
+        {
+            return;
+        }
+
+        Renderer renderer = visualObject.GetComponent<Renderer>();
+
+        if (renderer != null)
+        {
+            neonRenderers.Add(renderer);
+        }
+
+        neonTransforms.Add(visualObject.transform);
+        neonOriginalScales.Add(visualObject.transform.localScale);
+    }
+
     private void HandleBeat(int beatIndex)
     {
+        if (GameManager.Instance != null)
+        {
+            if (GameManager.Instance.IsGameOver || GameManager.Instance.IsPaused)
+            {
+                return;
+            }
+        }
+
         if (roadRenderer != null)
         {
             roadRenderer.material.color = roadBeatColor;
         }
 
+        Color beatColor = GetCurrentNeonBeatColor();
+
         for (int i = 0; i < neonRenderers.Count; i++)
         {
             if (neonRenderers[i] != null)
             {
-                neonRenderers[i].material.color = neonBeatColor;
+                neonRenderers[i].material.color = beatColor;
             }
+        }
+
+        if (useBeatScalePulse)
+        {
+            PulseNeonScales();
+        }
+    }
+
+    private void HandleScoreChanged(int score, int combo, int highestCombo)
+    {
+        currentCombo = combo;
+    }
+
+    private void PulseNeonScales()
+    {
+        float comboPulseBonus = 0f;
+
+        if (useComboAtmosphere)
+        {
+            comboPulseBonus = Mathf.Clamp01(currentCombo / 20f) * comboExtraPulseAmount;
+        }
+
+        float targetScale = neonBeatScale + comboPulseBonus;
+
+        for (int i = 0; i < neonTransforms.Count; i++)
+        {
+            if (neonTransforms[i] == null)
+            {
+                continue;
+            }
+
+            if (i >= neonOriginalScales.Count)
+            {
+                continue;
+            }
+
+            neonTransforms[i].localScale = neonOriginalScales[i] * targetScale;
         }
     }
 
@@ -208,10 +335,12 @@ public class RoadSegmentVisual : MonoBehaviour
         {
             roadRenderer.material.color = Color.Lerp(
                 roadRenderer.material.color,
-                roadNormalColor,
+                GetCurrentRoadBaseColor(),
                 returnSpeed * Time.deltaTime
             );
         }
+
+        Color targetNeonColor = GetCurrentNeonBaseColor();
 
         for (int i = 0; i < neonRenderers.Count; i++)
         {
@@ -222,9 +351,97 @@ public class RoadSegmentVisual : MonoBehaviour
 
             neonRenderers[i].material.color = Color.Lerp(
                 neonRenderers[i].material.color,
-                neonNormalColor,
+                targetNeonColor,
                 returnSpeed * Time.deltaTime
             );
         }
+    }
+
+    private void UpdateScales()
+    {
+        for (int i = 0; i < neonTransforms.Count; i++)
+        {
+            if (neonTransforms[i] == null)
+            {
+                continue;
+            }
+
+            if (i >= neonOriginalScales.Count)
+            {
+                continue;
+            }
+
+            neonTransforms[i].localScale = Vector3.Lerp(
+                neonTransforms[i].localScale,
+                neonOriginalScales[i],
+                scaleReturnSpeed * Time.deltaTime
+            );
+        }
+    }
+
+    private Color GetCurrentNeonBaseColor()
+    {
+        if (!useComboAtmosphere)
+        {
+            return neonNormalColor;
+        }
+
+        if (currentCombo >= comboLevelThree)
+        {
+            return comboLevelThreeNeonColor;
+        }
+
+        if (currentCombo >= comboLevelTwo)
+        {
+            return comboLevelTwoNeonColor;
+        }
+
+        if (currentCombo >= comboLevelOne)
+        {
+            return comboLevelOneNeonColor;
+        }
+
+        return neonNormalColor;
+    }
+
+    private Color GetCurrentRoadBaseColor()
+    {
+        if (!useComboAtmosphere)
+        {
+            return roadNormalColor;
+        }
+
+        if (currentCombo >= comboLevelThree)
+        {
+            return comboLevelThreeRoadColor;
+        }
+
+        if (currentCombo >= comboLevelTwo)
+        {
+            return comboLevelTwoRoadColor;
+        }
+
+        if (currentCombo >= comboLevelOne)
+        {
+            return comboLevelOneRoadColor;
+        }
+
+        return roadNormalColor;
+    }
+
+    private Color GetCurrentNeonBeatColor()
+    {
+        if (!useComboAtmosphere)
+        {
+            return neonBeatColor;
+        }
+
+        Color comboColor = GetCurrentNeonBaseColor();
+
+        return Color.Lerp(
+            neonBeatColor,
+            comboColor,
+            0.45f
+        );
     }
 }

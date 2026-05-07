@@ -16,6 +16,10 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private int obstaclePassedScore = 25;
     [SerializeField] private int obstacleComboBonus = 5;
 
+    [Header("Dodge Bonus Settings")]
+    [SerializeField] private int nearMissBonusScore = 25;
+    [SerializeField] private int perfectDodgeBonusScore = 50;
+
     [Header("Current Values")]
     [SerializeField] private int score = 0;
     [SerializeField] private int combo = 0;
@@ -24,6 +28,7 @@ public class ScoreManager : MonoBehaviour
     private bool isNewBestScore = false;
 
     public event Action<int, int, int> OnScoreChanged;
+    public event Action<string, int> OnDodgeBonusAwarded;
 
     public int Score => score;
     public int Combo => combo;
@@ -103,17 +108,57 @@ public class ScoreManager : MonoBehaviour
 
     public void AddObstaclePassedScore()
     {
+        AddObstaclePassedScore(0, "Obstacle");
+    }
+
+    public void AddObstaclePassedScore(int extraScore, string obstacleDisplayName)
+    {
         if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
         {
             return;
         }
 
-        int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus);
+        int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus) + extraScore;
         score += earnedScore;
 
-        Debug.Log("Engel başarıyla geçildi: +" + earnedScore);
+        Debug.Log(obstacleDisplayName + " geçildi: +" + earnedScore);
 
         NotifyScoreChanged();
+
+        if (extraScore > 0)
+        {
+            OnDodgeBonusAwarded?.Invoke(obstacleDisplayName.ToUpper() + " BONUS", extraScore);
+        }
+    }
+
+    public void AddNearMissBonus()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        score += nearMissBonusScore;
+
+        Debug.Log("Near Miss Bonus: +" + nearMissBonusScore);
+
+        NotifyScoreChanged();
+        OnDodgeBonusAwarded?.Invoke("NEAR MISS", nearMissBonusScore);
+    }
+
+    public void AddPerfectDodgeBonus()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        score += perfectDodgeBonusScore;
+
+        Debug.Log("Perfect Dodge Bonus: +" + perfectDodgeBonusScore);
+
+        NotifyScoreChanged();
+        OnDodgeBonusAwarded?.Invoke("PERFECT DODGE", perfectDodgeBonusScore);
     }
 
     public void SaveBestScoreIfNeeded()

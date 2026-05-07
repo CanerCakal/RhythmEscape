@@ -126,9 +126,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Obstacle
   passDistanceBehindPlayer: 1.5
+  useDodgeBonus: 1
+  nearMissDistance: 1.6
+  perfectDodgeDistance: 0.8
   useWarningVisual: 1
-  warningDistance: 10
-  warningPulseScale: 1.2
-  warningPulseSpeed: 8
+  warningDistance: 12
+  warningPulseScale: 1.15
+  warningPulseSpeed: 6
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   warningColor: {r: 1, g: 0, b: 0, a: 1}
