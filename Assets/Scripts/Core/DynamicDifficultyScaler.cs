@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class DynamicDifficultyScaler : MonoBehaviour
@@ -32,7 +33,12 @@ public class DynamicDifficultyScaler : MonoBehaviour
     [SerializeField] private int difficultyLevel = 0;
     [SerializeField] private float survivedTime = 0f;
 
+    [Header("Spawn Distance Scaling")]
+    [SerializeField] private float spawnDistanceIncreaseAmount = 1.5f;
+    [SerializeField] private float maxSpawnDistanceAhead = 50f;
+
     private float nextIncreaseTime;
+    public event Action<int> OnDynamicDifficultyIncreased;
 
     private void Start()
     {
@@ -70,8 +76,11 @@ public class DynamicDifficultyScaler : MonoBehaviour
         IncreasePlayerSpeed();
         DecreaseBeatTolerance();
         IncreaseObstaclePressure();
+        IncreaseSpawnDistance();
 
         Debug.Log("Dinamik zorluk arttı. Level: " + difficultyLevel);
+
+        OnDynamicDifficultyIncreased?.Invoke(difficultyLevel);
     }
 
     private void IncreasePlayerSpeed()
@@ -178,5 +187,28 @@ public class DynamicDifficultyScaler : MonoBehaviour
             default:
                 return normalMinBeatTolerance;
         }
+    }
+
+    private void IncreaseSpawnDistance()
+    {
+        if (obstacleSpawner == null)
+        {
+            return;
+        }
+
+        float currentDistance = obstacleSpawner.GetSpawnDistanceAhead();
+
+        float newDistance = Mathf.Min(
+            currentDistance + spawnDistanceIncreaseAmount,
+            maxSpawnDistanceAhead
+        );
+
+        obstacleSpawner.SetSpawnDistanceAhead(newDistance);
+
+        Debug.Log("Yeni engel doğma mesafesi: " + newDistance);
+    }
+    public int GetDifficultyLevel()
+    {
+        return difficultyLevel;
     }
 }
