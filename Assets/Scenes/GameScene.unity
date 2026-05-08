@@ -2305,7 +2305,7 @@ MonoBehaviour:
   obstacleSpawner: {fileID: 1617821428}
   difficultyManager: {fileID: 819273478}
   enableDynamicScaling: 1
-  increaseInterval: 15
+  increaseInterval: 5
   speedIncreaseAmount: 0.35
   easyMaxSpeed: 6.5
   normalMaxSpeed: 8
@@ -2383,6 +2383,11 @@ MonoBehaviour:
     rewardScore: 0
     isCompleted: 0
   difficultyManager: {fileID: 819273478}
+  dynamicDifficultyScaler: {fileID: 850978915}
+  targetIncreasePerTempoLevel: 0.08
+  rewardIncreasePerTempoLevel: 0.1
+  maxExtraTargetFromTempo: 20
+  maxExtraRewardFromTempo: 300
 --- !u!4 &854057017
 Transform:
   m_ObjectHideFlags: 0

@@ -31,6 +31,15 @@ public class QuestManager : MonoBehaviour
     [Header("Difficulty Reference")]
     [SerializeField] private DifficultyManager difficultyManager;
 
+    [Header("Dynamic Difficulty Reference")]
+    [SerializeField] private DynamicDifficultyScaler dynamicDifficultyScaler;
+
+    [Header("Tempo Quest Scaling")]
+    [SerializeField] private float targetIncreasePerTempoLevel = 0.08f;
+    [SerializeField] private float rewardIncreasePerTempoLevel = 0.10f;
+    [SerializeField] private int maxExtraTargetFromTempo = 20;
+    [SerializeField] private int maxExtraRewardFromTempo = 300;
+
     private QuestType lastQuestType;
     private bool hasLastQuestType = false;
 
@@ -73,9 +82,9 @@ public class QuestManager : MonoBehaviour
 
     private void Start()
     {
+        TryFindMissingReferences();
         GenerateNewRandomQuest();
     }
-
     private void Update()
     {
         if (GameManager.Instance != null)
@@ -100,9 +109,44 @@ public class QuestManager : MonoBehaviour
 
         ResetDistanceTracking();
 
-        Debug.Log("Yeni rastgele görev: " + currentQuest.questName);
-
+        Debug.Log(
+    "Yeni rastgele görev: " + currentQuest.questName +
+    " | Hedef: " + currentQuest.targetAmount +
+    " | Ödül: " + currentQuest.rewardScore +
+    " | Tempo Level: " + GetCurrentTempoLevel()
+);
         OnQuestUpdated?.Invoke(currentQuest);
+    }
+    private int GetCurrentTempoLevel()
+    {
+        if (dynamicDifficultyScaler == null)
+        {
+            return 0;
+        }
+
+        return dynamicDifficultyScaler.GetDifficultyLevel();
+    }
+    private void TryFindMissingReferences()
+    {
+        if (difficultyManager == null)
+        {
+            difficultyManager = FindObjectOfType<DifficultyManager>();
+        }
+
+        if (dynamicDifficultyScaler == null)
+        {
+            dynamicDifficultyScaler = FindObjectOfType<DynamicDifficultyScaler>();
+        }
+
+        if (player == null)
+        {
+            PlayerMovement foundPlayerMovement = FindObjectOfType<PlayerMovement>();
+
+            if (foundPlayerMovement != null)
+            {
+                player = foundPlayerMovement.transform;
+            }
+        }
     }
 
     private QuestType GetRandomQuestType()
@@ -153,6 +197,7 @@ public class QuestManager : MonoBehaviour
         );
 
         targetAmount = ApplyDifficultyToTarget(targetAmount);
+        targetAmount = ApplyTempoLevelToTarget(targetAmount);
 
         int rewardScore = CalculateRewardScore(targetAmount, 1);
 
@@ -173,6 +218,7 @@ public class QuestManager : MonoBehaviour
         );
 
         targetAmount = ApplyDifficultyToTarget(targetAmount);
+        targetAmount = ApplyTempoLevelToTarget(targetAmount);
 
         int rewardScore = CalculateRewardScore(targetAmount, 12);
 
@@ -193,6 +239,7 @@ public class QuestManager : MonoBehaviour
         );
 
         targetAmount = ApplyDifficultyToTarget(targetAmount);
+        targetAmount = ApplyTempoLevelToTarget(targetAmount);
 
         int rewardScore = CalculateRewardScore(targetAmount, 20);
 
@@ -223,11 +270,40 @@ public class QuestManager : MonoBehaviour
             }
         }
 
+        calculatedReward = ApplyTempoLevelToReward(calculatedReward);
+
         return Mathf.Clamp(
             calculatedReward,
             minimumRewardScore,
-            maximumRewardScore
+            maximumRewardScore + maxExtraRewardFromTempo
         );
+    }
+    private int ApplyTempoLevelToReward(int baseReward)
+    {
+        if (dynamicDifficultyScaler == null)
+        {
+            return baseReward;
+        }
+
+        int tempoLevel = dynamicDifficultyScaler.GetDifficultyLevel();
+
+        if (tempoLevel <= 0)
+        {
+            return baseReward;
+        }
+
+        int increasedReward = Mathf.RoundToInt(
+            baseReward * (1f + tempoLevel * rewardIncreasePerTempoLevel)
+        );
+
+        int extraReward = increasedReward - baseReward;
+
+        if (extraReward > maxExtraRewardFromTempo)
+        {
+            increasedReward = baseReward + maxExtraRewardFromTempo;
+        }
+
+        return increasedReward;
     }
 
     private void ResetDistanceTracking()
@@ -376,5 +452,32 @@ public class QuestManager : MonoBehaviour
             default:
                 return baseTarget;
         }
+    }
+    private int ApplyTempoLevelToTarget(int baseTarget)
+    {
+        if (dynamicDifficultyScaler == null)
+        {
+            return baseTarget;
+        }
+
+        int tempoLevel = dynamicDifficultyScaler.GetDifficultyLevel();
+
+        if (tempoLevel <= 0)
+        {
+            return baseTarget;
+        }
+
+        int increasedTarget = Mathf.RoundToInt(
+            baseTarget * (1f + tempoLevel * targetIncreasePerTempoLevel)
+        );
+
+        int extraTarget = increasedTarget - baseTarget;
+
+        if (extraTarget > maxExtraTargetFromTempo)
+        {
+            increasedTarget = baseTarget + maxExtraTargetFromTempo;
+        }
+
+        return Mathf.Max(1, increasedTarget);
     }
 }
