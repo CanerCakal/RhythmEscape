@@ -41,6 +41,26 @@ public class RoadSegmentVisual : MonoBehaviour
     [SerializeField] private float sideBlockLength = 1.2f;
     [SerializeField] private float sideBlockOffset = 0.65f;
 
+    [Header("Side Decoration Settings")]
+    [SerializeField] private bool createSideDecorations = true;
+    [SerializeField] private int sideDecorationCountPerSegment = 4;
+    [SerializeField] private float sideDecorationOffset = 2.0f;
+    [SerializeField] private float sideDecorationMinHeight = 0.8f;
+    [SerializeField] private float sideDecorationMaxHeight = 2.2f;
+    [SerializeField] private float sideDecorationWidth = 0.25f;
+    [SerializeField] private float sideDecorationDepth = 0.25f;
+    [SerializeField] private float sideDecorationYPosition = 0.4f;
+    [SerializeField] private bool randomizeSideDecorationHeights = true;
+
+    [Header("Side Floor Light Settings")]
+    [SerializeField] private bool createSideFloorLights = true;
+    [SerializeField] private int sideFloorLightCountPerSegment = 8;
+    [SerializeField] private float sideFloorLightOffset = 1.2f;
+    [SerializeField] private float sideFloorLightWidth = 0.12f;
+    [SerializeField] private float sideFloorLightHeight = 0.04f;
+    [SerializeField] private float sideFloorLightLength = 0.9f;
+    [SerializeField] private float sideFloorLightYPosition = -0.22f;
+
     [Header("Colors")]
     [SerializeField] private Color roadNormalColor = new Color(0.12f, 0.12f, 0.12f);
     [SerializeField] private Color roadBeatColor = new Color(0.25f, 0.25f, 0.25f);
@@ -218,6 +238,14 @@ public class RoadSegmentVisual : MonoBehaviour
         if (createSideBlocks)
         {
             CreateSideBlocks();
+        }
+        if (createSideDecorations)
+        {
+            CreateSideDecorations();
+        }
+        if (createSideFloorLights)
+        {
+            CreateSideFloorLights();
         }
     }
 
@@ -482,101 +510,220 @@ public class RoadSegmentVisual : MonoBehaviour
     }
 
     private void CreateCenterGlowLine()
-{
-    Vector3 worldPosition = transform.position + new Vector3(
-        0f,
-        centerLineYPosition,
-        0f
-    );
-
-    Vector3 worldScale = new Vector3(
-        centerLineWidth,
-        centerLineHeight,
-        segmentLength
-    );
-
-    GameObject centerLine = CreateVisualCube(
-        "Center Glow Line",
-        worldPosition,
-        worldScale,
-        GetCurrentNeonBaseColor()
-    );
-
-    AddNeonVisual(centerLine);
-}
-
-private void CreateOuterRail(string objectName, float xPosition)
-{
-    Vector3 worldPosition = transform.position + new Vector3(
-        xPosition,
-        barrierYPosition + 0.15f,
-        0f
-    );
-
-    Vector3 worldScale = new Vector3(
-        outerRailWidth,
-        outerRailHeight,
-        segmentLength
-    );
-
-    GameObject outerRail = CreateVisualCube(
-        objectName,
-        worldPosition,
-        worldScale,
-        GetCurrentNeonBaseColor()
-    );
-
-    AddNeonVisual(outerRail);
-}
-
-private void CreateSideBlocks()
-{
-    if (sideBlockCountPerSegment <= 0)
     {
-        return;
+        Vector3 worldPosition = transform.position + new Vector3(
+            0f,
+            centerLineYPosition,
+            0f
+        );
+
+        Vector3 worldScale = new Vector3(
+            centerLineWidth,
+            centerLineHeight,
+            segmentLength
+        );
+
+        GameObject centerLine = CreateVisualCube(
+            "Center Glow Line",
+            worldPosition,
+            worldScale,
+            GetCurrentNeonBaseColor()
+        );
+
+        AddNeonVisual(centerLine);
     }
 
-    float spacing = segmentLength / sideBlockCountPerSegment;
-
-    for (int i = 0; i < sideBlockCountPerSegment; i++)
+    private void CreateOuterRail(string objectName, float xPosition)
     {
-        float zOffset = -segmentLength / 2f + spacing * i + spacing / 2f;
+        Vector3 worldPosition = transform.position + new Vector3(
+            xPosition,
+            barrierYPosition + 0.15f,
+            0f
+        );
 
-        CreateSideBlock(
-            "Left Side Block " + i,
-            -segmentWidth / 2f - sideBlockOffset,
+        Vector3 worldScale = new Vector3(
+            outerRailWidth,
+            outerRailHeight,
+            segmentLength
+        );
+
+        GameObject outerRail = CreateVisualCube(
+            objectName,
+            worldPosition,
+            worldScale,
+            GetCurrentNeonBaseColor()
+        );
+
+        AddNeonVisual(outerRail);
+    }
+
+    private void CreateSideBlocks()
+    {
+        if (sideBlockCountPerSegment <= 0)
+        {
+            return;
+        }
+
+        float spacing = segmentLength / sideBlockCountPerSegment;
+
+        for (int i = 0; i < sideBlockCountPerSegment; i++)
+        {
+            float zOffset = -segmentLength / 2f + spacing * i + spacing / 2f;
+
+            CreateSideBlock(
+                "Left Side Block " + i,
+                -segmentWidth / 2f - sideBlockOffset,
+                zOffset
+            );
+
+            CreateSideBlock(
+                "Right Side Block " + i,
+                segmentWidth / 2f + sideBlockOffset,
+                zOffset
+            );
+        }
+    }
+
+    private void CreateSideBlock(string objectName, float xPosition, float zOffset)
+    {
+        Vector3 worldPosition = transform.position + new Vector3(
+            xPosition,
+            barrierYPosition + 0.15f,
             zOffset
         );
 
-        CreateSideBlock(
-            "Right Side Block " + i,
-            segmentWidth / 2f + sideBlockOffset,
+        Vector3 worldScale = new Vector3(
+            sideBlockWidth,
+            sideBlockHeight,
+            sideBlockLength
+        );
+
+        GameObject sideBlock = CreateVisualCube(
+            objectName,
+            worldPosition,
+            worldScale,
+            GetCurrentNeonBaseColor()
+        );
+
+        AddNeonVisual(sideBlock);
+    }
+
+    private void CreateSideDecorations()
+    {
+        if (sideDecorationCountPerSegment <= 0)
+        {
+            return;
+        }
+
+        float spacing = segmentLength / sideDecorationCountPerSegment;
+
+        for (int i = 0; i < sideDecorationCountPerSegment; i++)
+        {
+            float zOffset = -segmentLength / 2f + spacing * i + spacing / 2f;
+
+            CreateSideDecoration(
+                "Left Neon Pillar " + i,
+                -segmentWidth / 2f - sideDecorationOffset,
+                zOffset,
+                i
+            );
+
+            CreateSideDecoration(
+                "Right Neon Pillar " + i,
+                segmentWidth / 2f + sideDecorationOffset,
+                zOffset,
+                i
+            );
+        }
+    }
+
+    private void CreateSideDecoration(string objectName, float xPosition, float zOffset, int index)
+    {
+        float decorationHeight = sideDecorationMaxHeight;
+
+        if (randomizeSideDecorationHeights)
+        {
+            float noiseValue = Mathf.PerlinNoise(
+                transform.position.z * 0.05f,
+                index * 0.35f
+            );
+
+            decorationHeight = Mathf.Lerp(
+                sideDecorationMinHeight,
+                sideDecorationMaxHeight,
+                noiseValue
+            );
+        }
+
+        Vector3 worldPosition = transform.position + new Vector3(
+            xPosition,
+            sideDecorationYPosition + decorationHeight / 2f,
             zOffset
         );
+
+        Vector3 worldScale = new Vector3(
+            sideDecorationWidth,
+            decorationHeight,
+            sideDecorationDepth
+        );
+
+        GameObject decoration = CreateVisualCube(
+            objectName,
+            worldPosition,
+            worldScale,
+            GetCurrentNeonBaseColor()
+        );
+
+        AddNeonVisual(decoration);
     }
-}
+    private void CreateSideFloorLights()
+    {
+        if (sideFloorLightCountPerSegment <= 0)
+        {
+            return;
+        }
 
-private void CreateSideBlock(string objectName, float xPosition, float zOffset)
-{
-    Vector3 worldPosition = transform.position + new Vector3(
-        xPosition,
-        barrierYPosition + 0.15f,
-        zOffset
-    );
+        float spacing = segmentLength / sideFloorLightCountPerSegment;
 
-    Vector3 worldScale = new Vector3(
-        sideBlockWidth,
-        sideBlockHeight,
-        sideBlockLength
-    );
+        for (int i = 0; i < sideFloorLightCountPerSegment; i++)
+        {
+            float zOffset = -segmentLength / 2f + spacing * i + spacing / 2f;
 
-    GameObject sideBlock = CreateVisualCube(
-        objectName,
-        worldPosition,
-        worldScale,
-        GetCurrentNeonBaseColor()
-    );
+            CreateSideFloorLight(
+                "Left Floor Light " + i,
+                -segmentWidth / 2f - sideFloorLightOffset,
+                zOffset
+            );
 
-    AddNeonVisual(sideBlock);
-}
+            CreateSideFloorLight(
+                "Right Floor Light " + i,
+                segmentWidth / 2f + sideFloorLightOffset,
+                zOffset
+            );
+        }
+    }
+
+    private void CreateSideFloorLight(string objectName, float xPosition, float zOffset)
+    {
+        Vector3 worldPosition = transform.position + new Vector3(
+            xPosition,
+            sideFloorLightYPosition,
+            zOffset
+        );
+
+        Vector3 worldScale = new Vector3(
+            sideFloorLightWidth,
+            sideFloorLightHeight,
+            sideFloorLightLength
+        );
+
+        GameObject floorLight = CreateVisualCube(
+            objectName,
+            worldPosition,
+            worldScale,
+            GetCurrentNeonBaseColor()
+        );
+
+        AddNeonVisual(floorLight);
+    }
 }
