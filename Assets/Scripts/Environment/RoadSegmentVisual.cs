@@ -21,6 +21,26 @@ public class RoadSegmentVisual : MonoBehaviour
     [SerializeField] private float laneLineHeight = 0.03f;
     [SerializeField] private float laneLineYPosition = -0.27f;
 
+    [Header("Center Glow Line Settings")]
+    [SerializeField] private bool createCenterGlowLine = true;
+    [SerializeField] private float centerLineWidth = 0.08f;
+    [SerializeField] private float centerLineHeight = 0.035f;
+    [SerializeField] private float centerLineYPosition = -0.25f;
+
+    [Header("Outer Rail Settings")]
+    [SerializeField] private bool createOuterRails = true;
+    [SerializeField] private float outerRailOffset = 0.35f;
+    [SerializeField] private float outerRailWidth = 0.08f;
+    [SerializeField] private float outerRailHeight = 0.15f;
+
+    [Header("Side Block Settings")]
+    [SerializeField] private bool createSideBlocks = true;
+    [SerializeField] private int sideBlockCountPerSegment = 6;
+    [SerializeField] private float sideBlockWidth = 0.22f;
+    [SerializeField] private float sideBlockHeight = 0.18f;
+    [SerializeField] private float sideBlockLength = 1.2f;
+    [SerializeField] private float sideBlockOffset = 0.65f;
+
     [Header("Colors")]
     [SerializeField] private Color roadNormalColor = new Color(0.12f, 0.12f, 0.12f);
     [SerializeField] private Color roadBeatColor = new Color(0.25f, 0.25f, 0.25f);
@@ -183,6 +203,22 @@ public class RoadSegmentVisual : MonoBehaviour
 
         CreateLaneLine("Left Lane Line", -laneLineXPosition);
         CreateLaneLine("Right Lane Line", laneLineXPosition);
+
+        if (createCenterGlowLine)
+        {
+            CreateCenterGlowLine();
+        }
+
+        if (createOuterRails)
+        {
+            CreateOuterRail("Outer Left Rail", -segmentWidth / 2f - outerRailOffset);
+            CreateOuterRail("Outer Right Rail", segmentWidth / 2f + outerRailOffset);
+        }
+
+        if (createSideBlocks)
+        {
+            CreateSideBlocks();
+        }
     }
 
     private void CreateSideBarrier(string objectName, float xPosition)
@@ -444,4 +480,103 @@ public class RoadSegmentVisual : MonoBehaviour
             0.45f
         );
     }
+
+    private void CreateCenterGlowLine()
+{
+    Vector3 worldPosition = transform.position + new Vector3(
+        0f,
+        centerLineYPosition,
+        0f
+    );
+
+    Vector3 worldScale = new Vector3(
+        centerLineWidth,
+        centerLineHeight,
+        segmentLength
+    );
+
+    GameObject centerLine = CreateVisualCube(
+        "Center Glow Line",
+        worldPosition,
+        worldScale,
+        GetCurrentNeonBaseColor()
+    );
+
+    AddNeonVisual(centerLine);
+}
+
+private void CreateOuterRail(string objectName, float xPosition)
+{
+    Vector3 worldPosition = transform.position + new Vector3(
+        xPosition,
+        barrierYPosition + 0.15f,
+        0f
+    );
+
+    Vector3 worldScale = new Vector3(
+        outerRailWidth,
+        outerRailHeight,
+        segmentLength
+    );
+
+    GameObject outerRail = CreateVisualCube(
+        objectName,
+        worldPosition,
+        worldScale,
+        GetCurrentNeonBaseColor()
+    );
+
+    AddNeonVisual(outerRail);
+}
+
+private void CreateSideBlocks()
+{
+    if (sideBlockCountPerSegment <= 0)
+    {
+        return;
+    }
+
+    float spacing = segmentLength / sideBlockCountPerSegment;
+
+    for (int i = 0; i < sideBlockCountPerSegment; i++)
+    {
+        float zOffset = -segmentLength / 2f + spacing * i + spacing / 2f;
+
+        CreateSideBlock(
+            "Left Side Block " + i,
+            -segmentWidth / 2f - sideBlockOffset,
+            zOffset
+        );
+
+        CreateSideBlock(
+            "Right Side Block " + i,
+            segmentWidth / 2f + sideBlockOffset,
+            zOffset
+        );
+    }
+}
+
+private void CreateSideBlock(string objectName, float xPosition, float zOffset)
+{
+    Vector3 worldPosition = transform.position + new Vector3(
+        xPosition,
+        barrierYPosition + 0.15f,
+        zOffset
+    );
+
+    Vector3 worldScale = new Vector3(
+        sideBlockWidth,
+        sideBlockHeight,
+        sideBlockLength
+    );
+
+    GameObject sideBlock = CreateVisualCube(
+        objectName,
+        worldPosition,
+        worldScale,
+        GetCurrentNeonBaseColor()
+    );
+
+    AddNeonVisual(sideBlock);
+}
 }
