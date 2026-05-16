@@ -5062,66 +5062,29 @@ MonoBehaviour:
     minComboToSpawn: 0
   - obstacleName: Tall
     obstaclePrefab: {fileID: 493591693239262628, guid: 06cec898c6ada4ac9a63d12d5d29c82f, type: 3}
-    spawnWeight: 33
+    spawnWeight: 30
     minComboToSpawn: 5
   - obstacleName: Wide
     obstaclePrefab: {fileID: 493591693239262628, guid: 7de1fd5c74a8b4afa8562684c28e0196, type: 3}
     spawnWeight: 25
     minComboToSpawn: 11
-  - obstacleName: Rhythm Gate
-    obstaclePrefab: {fileID: 1331475049931570397, guid: db88dd71d4018449993ce204d96158b6, type: 3}
-    spawnWeight: 10
-    minComboToSpawn: 3
   spawnDistanceAhead: 35
   laneDistance: 2
   obstacleYPosition: 0.5
   usePatternSpawning: 1
-  obstaclePattern:
-  - beatIndex: 4
-    laneIndex: 0
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 8
-    laneIndex: 2
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 12
-    laneIndex: 1
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 16
-    laneIndex: 0
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 20
-    laneIndex: 2
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 24
-    laneIndex: 1
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 28
-    laneIndex: 0
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 32
-    laneIndex: 2
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 36
-    laneIndex: 1
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
-  - beatIndex: 40
-    laneIndex: 0
-    useSpecificObstacleType: 0
-    obstacleTypeIndex: 0
+  obstaclePattern: []
   continueRandomAfterPatternEnds: 1
   repeatPatternAfterEnd: 0
   firstSpawnBeat: 4
   spawnEveryBeats: 4
   avoidSameLaneTwice: 1
+  enableRhythmGateSpawning: 1
+  rhythmGatePrefab: {fileID: 1331475049931570397, guid: db88dd71d4018449993ce204d96158b6, type: 3}
+  firstRhythmGateBeat: 16
+  rhythmGateEveryBeats: 24
+  minimumComboForRhythmGate: 3
+  rhythmGateYPosition: 0.9
+  blockNormalObstacleOnGateBeat: 1
 --- !u!4 &1617821429
 Transform:
   m_ObjectHideFlags: 0

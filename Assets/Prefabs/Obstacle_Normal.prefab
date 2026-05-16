@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1813785737177547169}
   - component: {fileID: 955166836961188186}
   - component: {fileID: 6225397409150169432}
+  - component: {fileID: -3777807790789135824}
   m_Layer: 0
   m_Name: Obstacle_Normal
   m_TagString: Obstacle
@@ -137,3 +138,16 @@ MonoBehaviour:
   warningPulseSpeed: 6
   normalColor: {r: 0.8490566, g: 0.457246, b: 0.10012458, a: 1}
   warningColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &-3777807790789135824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 493591693239262628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a08e01a6c3a164ad0b23f430d9ed2e5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHazard
+  causesGameOver: 1

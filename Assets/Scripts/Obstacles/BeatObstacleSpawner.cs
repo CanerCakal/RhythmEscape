@@ -56,6 +56,15 @@ public class BeatObstacleSpawner : MonoBehaviour
     [SerializeField] private int spawnEveryBeats = 4;
     [SerializeField] private bool avoidSameLaneTwice = true;
 
+    [Header("Rhythm Gate Spawn Settings")]
+    [SerializeField] private bool enableRhythmGateSpawning = true;
+    [SerializeField] private GameObject rhythmGatePrefab;
+    [SerializeField] private int firstRhythmGateBeat = 16;
+    [SerializeField] private int rhythmGateEveryBeats = 24;
+    [SerializeField] private int minimumComboForRhythmGate = 0;
+    [SerializeField] private float rhythmGateYPosition = 0.9f;
+    [SerializeField] private bool blockNormalObstacleOnGateBeat = true;
+
     private bool isSubscribed = false;
     private int lastLaneIndex = -1;
     private int lastPatternBeatIndex = -1;
@@ -158,6 +167,13 @@ public class BeatObstacleSpawner : MonoBehaviour
             return;
         }
 
+        bool spawnedRhythmGate = TrySpawnRhythmGate(beatIndex);
+
+        if (spawnedRhythmGate && blockNormalObstacleOnGateBeat)
+        {
+            return;
+        }
+
         if (GetFallbackObstaclePrefab() == null)
         {
             Debug.LogWarning("BeatObstacleSpawner: Obstacle prefab atanmamış.");
@@ -239,6 +255,61 @@ public class BeatObstacleSpawner : MonoBehaviour
         GameObject selectedPrefab = GetRandomObstaclePrefab();
 
         SpawnObstacleAtLane(randomLane, beatIndex, selectedPrefab);
+    }
+
+    private bool TrySpawnRhythmGate(int beatIndex)
+    {
+        if (!enableRhythmGateSpawning)
+        {
+            return false;
+        }
+
+        if (rhythmGatePrefab == null)
+        {
+            return false;
+        }
+
+        if (beatIndex < firstRhythmGateBeat)
+        {
+            return false;
+        }
+
+        if ((beatIndex - firstRhythmGateBeat) % rhythmGateEveryBeats != 0)
+        {
+            return false;
+        }
+
+        if (currentCombo < minimumComboForRhythmGate)
+        {
+            return false;
+        }
+
+        SpawnRhythmGate(beatIndex);
+        return true;
+    }
+
+    private void SpawnRhythmGate(int beatIndex)
+    {
+        Vector3 spawnPosition = new Vector3(
+            0f,
+            rhythmGateYPosition,
+            player.position.z + spawnDistanceAhead
+        );
+
+        GameObject spawnedGate = Instantiate(
+            rhythmGatePrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
+
+        RhythmGate rhythmGate = spawnedGate.GetComponent<RhythmGate>();
+
+        if (rhythmGate != null)
+        {
+            rhythmGate.Initialize(player);
+        }
+
+        Debug.Log("Rhythm Gate spawn edildi. Beat: " + beatIndex);
     }
 
     private void SpawnObstacleAtLane(int laneIndex, int beatIndex, GameObject selectedObstaclePrefab)

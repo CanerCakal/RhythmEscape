@@ -115,6 +115,11 @@ public class RhythmGate : MonoBehaviour
             {
                 ScoreManager.Instance.ResetComboWithPenalty();
             }
+
+            if (destroyAfterTrigger)
+            {
+                Destroy(gameObject, 0.15f);
+            }
         }
     }
 
@@ -143,5 +148,12 @@ public class RhythmGate : MonoBehaviour
         {
             gateRenderer.material.color = color;
         }
+    }
+
+    private Transform player;
+
+    public void Initialize(Transform playerTransform)
+    {
+        player = playerTransform;
     }
 }
