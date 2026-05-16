@@ -4,7 +4,7 @@ public class RhythmGate : MonoBehaviour
 {
     [Header("Gate Settings")]
     [SerializeField] private int successBonusScore = 75;
-    [SerializeField] private bool gameOverOnMiss = true;
+    [SerializeField] private bool gameOverOnMiss = false;
     [SerializeField] private bool destroyAfterTrigger = true;
 
     [Header("Visual Feedback")]
@@ -155,5 +155,10 @@ public class RhythmGate : MonoBehaviour
     public void Initialize(Transform playerTransform)
     {
         player = playerTransform;
+    }
+
+    public void SetGameOverOnMiss(bool value)
+    {
+        gameOverOnMiss = value;
     }
 }

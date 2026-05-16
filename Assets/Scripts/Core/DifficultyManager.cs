@@ -94,7 +94,49 @@ public class DifficultyManager : MonoBehaviour
                 break;
         }
 
+        ApplySelectedTrackGameplayProfile();
+
         Debug.Log("Zorluk uygulandı: " + selectedDifficulty);
+    }
+
+    private void ApplySelectedTrackGameplayProfile()
+    {
+        if (!SelectedMusicManager.HasSelectedTrack())
+        {
+            return;
+        }
+
+        MusicTrackData selectedTrack = SelectedMusicManager.SelectedTrack;
+
+        if (selectedTrack == null)
+        {
+            return;
+        }
+
+        if (playerMovement != null)
+        {
+            float currentSpeed = playerMovement.GetForwardSpeed();
+            playerMovement.SetForwardSpeed(currentSpeed * selectedTrack.playerSpeedMultiplier);
+        }
+
+        if (obstacleSpawner != null)
+        {
+            obstacleSpawner.SetSpawnEveryBeats(selectedTrack.obstacleSpawnEveryBeats);
+            obstacleSpawner.SetRhythmGateEveryBeats(selectedTrack.rhythmGateEveryBeats);
+            obstacleSpawner.SetMinimumComboForRhythmGate(selectedTrack.minimumComboForRhythmGate);
+            obstacleSpawner.SetRhythmGateGameOverOnMiss(selectedTrack.rhythmGateGameOverOnMiss);
+        }
+
+        Debug.Log(
+            "Track gameplay profile uygulandı: " +
+            selectedTrack.trackName +
+            " | Speed Multiplier: " +
+            selectedTrack.playerSpeedMultiplier +
+            " | Obstacle Every Beats: " +
+            selectedTrack.obstacleSpawnEveryBeats +
+            " | Gate Every Beats: " +
+            selectedTrack.rhythmGateEveryBeats
+        );
     }
 
     private void ApplyEasySettings()

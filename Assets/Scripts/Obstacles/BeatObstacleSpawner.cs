@@ -542,4 +542,29 @@ public class BeatObstacleSpawner : MonoBehaviour
     {
         repeatPatternAfterEnd = value;
     }
+
+    public void SetRhythmGateEveryBeats(int newRhythmGateEveryBeats)
+    {
+        rhythmGateEveryBeats = Mathf.Max(1, newRhythmGateEveryBeats);
+    }
+
+    public void SetMinimumComboForRhythmGate(int newMinimumCombo)
+    {
+        minimumComboForRhythmGate = Mathf.Max(0, newMinimumCombo);
+    }
+
+    public void SetRhythmGateGameOverOnMiss(bool value)
+    {
+        if (rhythmGatePrefab == null)
+        {
+            return;
+        }
+
+        RhythmGate rhythmGate = rhythmGatePrefab.GetComponent<RhythmGate>();
+
+        if (rhythmGate != null)
+        {
+            rhythmGate.SetGameOverOnMiss(value);
+        }
+    }
 }
