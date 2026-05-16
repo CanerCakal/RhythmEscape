@@ -210,6 +210,52 @@ public class ScoreManager : MonoBehaviour
         Debug.Log("Best Score sıfırlandı.");
     }
 
+    public void AddRhythmGateBonus(int bonusScore)
+{
+    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+    {
+        return;
+    }
+
+    if (bonusScore <= 0)
+    {
+        return;
+    }
+
+    score += bonusScore;
+    combo++;
+
+    if (combo > highestCombo)
+    {
+        highestCombo = combo;
+    }
+
+    Debug.Log("Rhythm Gate Bonus: +" + bonusScore + " | Combo: " + combo);
+
+    NotifyScoreChanged();
+    OnDodgeBonusAwarded?.Invoke("RHYTHM GATE", bonusScore);
+}
+
+public void ResetComboWithPenalty()
+{
+    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+    {
+        return;
+    }
+
+    combo = 0;
+    score -= wrongInputPenalty;
+
+    if (score < 0)
+    {
+        score = 0;
+    }
+
+    Debug.Log("Rhythm Gate kaçırıldı. Combo sıfırlandı.");
+
+    NotifyScoreChanged();
+}
+
     private void NotifyScoreChanged()
     {
         OnScoreChanged?.Invoke(score, combo, highestCombo);
