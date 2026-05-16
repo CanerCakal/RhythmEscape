@@ -31,6 +31,8 @@ public class RhythmManager : MonoBehaviour
 
     private void Start()
     {
+        ApplySelectedMusic();
+
         secondsPerBeat = 60f / bpm;
 
         if (musicSource != null)
@@ -43,6 +45,31 @@ public class RhythmManager : MonoBehaviour
             Debug.LogWarning("RhythmManager: MusicSource atanmamış.");
             songStartTime = Time.time;
         }
+    }
+
+    private void ApplySelectedMusic()
+    {
+        if (!SelectedMusicManager.HasSelectedTrack())
+        {
+            Debug.LogWarning("RhythmManager: Seçilen müzik bulunamadı. Inspector BPM ve AudioSource kullanılacak.");
+            return;
+        }
+
+        MusicTrackData selectedTrack = SelectedMusicManager.SelectedTrack;
+
+        if (selectedTrack == null)
+        {
+            return;
+        }
+
+        bpm = selectedTrack.bpm;
+
+        if (musicSource != null && selectedTrack.audioClip != null)
+        {
+            musicSource.clip = selectedTrack.audioClip;
+        }
+
+        Debug.Log("RhythmManager seçilen müziği uyguladı: " + selectedTrack.trackName + " | BPM: " + bpm);
     }
 
     private void Update()

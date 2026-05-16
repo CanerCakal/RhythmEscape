@@ -72,12 +72,16 @@ Assets/Scripts/
   PlayerCollision.cs
   PlayerMovement.cs
   PlayerVisualFeedback.cs
- Rhythm/RhythmManager.cs
+ Rhythm/
+  MusicTrackData.cs
+  RhythmManager.cs
+  SelectedMusicManager.cs
  UI/
   BeatIndicatorUI.cs
   FeedbackUI.cs
   GameOverUI.cs
   MainMenuController.cs
+  MusicSelectController.cs
   PauseMenuUI.cs
   QuestUI.cs
   ScoreUI.cs

@@ -8,7 +8,7 @@ public class MainMenuController : MonoBehaviour
     private const string BestScoreKey = "BestScore";
 
     [Header("Scene Settings")]
-    [SerializeField] private string gameSceneName = "GameScene";
+    [SerializeField] private string musicSelectSceneName = "MusicSelectScene";
 
     [Header("Texts")]
     [SerializeField] private TextMeshProUGUI bestScoreText;
@@ -48,7 +48,6 @@ public class MainMenuController : MonoBehaviour
     {
         StartGameWithDifficulty("Hard");
     }
-
     private void StartGameWithDifficulty(string difficulty)
     {
         PlayerPrefs.SetString("SelectedDifficulty", difficulty);
@@ -56,7 +55,7 @@ public class MainMenuController : MonoBehaviour
 
         Debug.Log("Seçilen zorluk: " + difficulty);
 
-        SceneManager.LoadScene(gameSceneName);
+        SceneManager.LoadScene(musicSelectSceneName);
     }
 
     public void ResetBestScore()

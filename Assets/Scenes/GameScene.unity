@@ -744,9 +744,9 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 1c37396d51d784e76be1a6f919f20ef1, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.6
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -5058,20 +5058,20 @@ MonoBehaviour:
   obstacleTypes:
   - obstacleName: Normal
     obstaclePrefab: {fileID: 493591693239262628, guid: 72a15c5e48afb48a99a0be5931ff92f2, type: 3}
-    spawnWeight: 25
+    spawnWeight: 35
     minComboToSpawn: 0
   - obstacleName: Tall
     obstaclePrefab: {fileID: 493591693239262628, guid: 06cec898c6ada4ac9a63d12d5d29c82f, type: 3}
-    spawnWeight: 20
+    spawnWeight: 33
     minComboToSpawn: 5
   - obstacleName: Wide
     obstaclePrefab: {fileID: 493591693239262628, guid: 7de1fd5c74a8b4afa8562684c28e0196, type: 3}
-    spawnWeight: 15
-    minComboToSpawn: 8
+    spawnWeight: 25
+    minComboToSpawn: 11
   - obstacleName: Rhythm Gate
     obstaclePrefab: {fileID: 1331475049931570397, guid: db88dd71d4018449993ce204d96158b6, type: 3}
-    spawnWeight: 30
-    minComboToSpawn: 8
+    spawnWeight: 10
+    minComboToSpawn: 3
   spawnDistanceAhead: 35
   laneDistance: 2
   obstacleYPosition: 0.5
