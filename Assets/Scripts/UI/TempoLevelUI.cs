@@ -8,18 +8,24 @@ public class TempoLevelUI : MonoBehaviour
     [SerializeField] private DynamicDifficultyScaler dynamicDifficultyScaler;
     [SerializeField] private TextMeshProUGUI tempoLevelText;
 
-    [Header("Message Settings")]
+    [Header("Level Up Message Settings")]
     [SerializeField] private string titlePrefix = "TEMPO LEVEL ";
-    [SerializeField] private string subtitle = "Tempo yükseldi!";
+    [SerializeField] private string subtitle = "Speed up!";
+
+    [Header("Warning Message Settings")]
+    [SerializeField] private string warningTitle = "TEMPO RISING";
+    [SerializeField] private string warningSubtitle = "Get ready!";
 
     [Header("Animation Settings")]
-    [SerializeField] private float showDuration = 1.4f;
-    [SerializeField] private float startScale = 1.35f;
+    [SerializeField] private float showDuration = 1.6f;
+    [SerializeField] private float warningShowDuration = 1.2f;
+    [SerializeField] private float startScale = 1.45f;
     [SerializeField] private float endScale = 1f;
-    [SerializeField] private float moveUpDistance = 40f;
+    [SerializeField] private float moveUpDistance = 45f;
 
     [Header("Visual Settings")]
-    [SerializeField] private Color messageColor = Color.yellow;
+    [SerializeField] private Color levelUpColor = Color.yellow;
+    [SerializeField] private Color warningColor = Color.cyan;
 
     private bool isSubscribed = false;
 
@@ -59,6 +65,7 @@ public class TempoLevelUI : MonoBehaviour
         if (dynamicDifficultyScaler != null && isSubscribed)
         {
             dynamicDifficultyScaler.OnDynamicDifficultyIncreased -= ShowTempoLevel;
+            dynamicDifficultyScaler.OnTempoIncreaseWarning -= ShowTempoWarning;
             isSubscribed = false;
         }
     }
@@ -89,39 +96,68 @@ public class TempoLevelUI : MonoBehaviour
         }
 
         dynamicDifficultyScaler.OnDynamicDifficultyIncreased += ShowTempoLevel;
+        dynamicDifficultyScaler.OnTempoIncreaseWarning += ShowTempoWarning;
+
         isSubscribed = true;
 
         Debug.Log("TempoLevelUI DynamicDifficultyScaler'a bağlandı.");
     }
 
+    private void ShowTempoWarning(int nextLevel, float remainingTime)
+    {
+        if (tempoLevelText == null)
+        {
+            return;
+        }
+
+        string message = warningTitle + "\n" + warningSubtitle;
+
+        PlayMessage(
+            message,
+            warningColor,
+            warningShowDuration,
+            startScale * 0.92f
+        );
+    }
+
     private void ShowTempoLevel(int level)
     {
-        Debug.Log("TempoLevelUI mesaj gösteriyor. Level: " + level);
-
         if (tempoLevelText == null)
         {
             Debug.LogWarning("TempoLevelUI: Tempo Level Text atanmamış.");
             return;
         }
 
+        string message = titlePrefix + level + "\n" + subtitle;
+
+        PlayMessage(
+            message,
+            levelUpColor,
+            showDuration,
+            startScale
+        );
+    }
+
+    private void PlayMessage(string message, Color color, float duration, float scale)
+    {
         if (tempoCoroutine != null)
         {
             StopCoroutine(tempoCoroutine);
         }
 
-        tempoCoroutine = StartCoroutine(TempoLevelRoutine(level));
+        tempoCoroutine = StartCoroutine(MessageRoutine(message, color, duration, scale));
     }
 
-    private IEnumerator TempoLevelRoutine(int level)
+    private IEnumerator MessageRoutine(string message, Color color, float duration, float scale)
     {
         tempoLevelText.gameObject.SetActive(true);
 
-        tempoLevelText.text = titlePrefix + level + "\n" + subtitle;
+        tempoLevelText.text = message;
 
         tempoLevelText.transform.localPosition = originalPosition;
-        tempoLevelText.transform.localScale = originalScale * startScale;
+        tempoLevelText.transform.localScale = originalScale * scale;
 
-        Color startColor = messageColor;
+        Color startColor = color;
         startColor.a = 1f;
         tempoLevelText.color = startColor;
 
@@ -130,11 +166,11 @@ public class TempoLevelUI : MonoBehaviour
 
         float timer = 0f;
 
-        while (timer < showDuration)
+        while (timer < duration)
         {
             timer += Time.unscaledDeltaTime;
 
-            float t = timer / showDuration;
+            float t = timer / duration;
 
             tempoLevelText.transform.localPosition = Vector3.Lerp(
                 startPosition,
@@ -143,7 +179,7 @@ public class TempoLevelUI : MonoBehaviour
             );
 
             tempoLevelText.transform.localScale = Vector3.Lerp(
-                originalScale * startScale,
+                originalScale * scale,
                 originalScale * endScale,
                 t
             );
@@ -159,7 +195,7 @@ public class TempoLevelUI : MonoBehaviour
         tempoLevelText.transform.localScale = originalScale;
         tempoLevelText.gameObject.SetActive(false);
 
-        Color resetColor = messageColor;
+        Color resetColor = color;
         resetColor.a = 1f;
         tempoLevelText.color = resetColor;
     }

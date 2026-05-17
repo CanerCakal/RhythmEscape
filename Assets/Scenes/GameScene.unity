@@ -2721,21 +2721,29 @@ MonoBehaviour:
   obstacleSpawner: {fileID: 1617821428}
   difficultyManager: {fileID: 819273478}
   enableDynamicScaling: 1
-  increaseInterval: 5
+  firstIncreaseDelay: 35
+  increaseInterval: 35
+  increaseIntervalOverTime: 1
+  intervalIncreasePerLevel: 3
+  maxIncreaseInterval: 55
+  useTempoWarning: 1
+  warningTimeBeforeIncrease: 4
   speedIncreaseAmount: 0.35
   easyMaxSpeed: 6.5
   normalMaxSpeed: 8
   hardMaxSpeed: 9.5
-  toleranceDecreaseAmount: 0.015
+  toleranceDecreaseAmount: 0.008
   easyMinBeatTolerance: 0.15
   normalMinBeatTolerance: 0.1
   hardMinBeatTolerance: 0.07
-  reduceSpawnEveryBeatsEveryLevel: 1
+  reduceSpawnEveryBeatsEveryLevel: 2
   minimumSpawnEveryBeats: 2
+  spawnDistanceIncreaseAmount: 1.8
+  maxSpawnDistanceAhead: 50
   difficultyLevel: 0
   survivedTime: 0
-  spawnDistanceIncreaseAmount: 1.5
-  maxSpawnDistanceAhead: 50
+  nextIncreaseTime: 0
+  warningTriggeredForCurrentLevel: 0
 --- !u!4 &850978916
 Transform:
   m_ObjectHideFlags: 0
@@ -3074,13 +3082,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TempoLevelUI
   dynamicDifficultyScaler: {fileID: 850978915}
   tempoLevelText: {fileID: 1372789323}
-  titlePrefix: 'TEMPO LEVEL '
+  titlePrefix: Tempo Seviyesi
   subtitle: "Tempo y\xFCkseldi!"
-  showDuration: 1.4
-  startScale: 1.35
+  warningTitle: Tempo Artacak!!!
+  warningSubtitle: "Haz\u0131rlan..."
+  showDuration: 1.8
+  warningShowDuration: 1.2
+  startScale: 1.6
   endScale: 1
-  moveUpDistance: 40
-  messageColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  moveUpDistance: 55
+  levelUpColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  warningColor: {r: 0, g: 1, b: 1, a: 1}
 --- !u!4 &862185224
 Transform:
   m_ObjectHideFlags: 0
@@ -4799,7 +4811,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535

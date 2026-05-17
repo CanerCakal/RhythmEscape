@@ -11,16 +11,31 @@ public class DynamicDifficultyScaler : MonoBehaviour
 
     [Header("Scaling Settings")]
     [SerializeField] private bool enableDynamicScaling = true;
-    [SerializeField] private float increaseInterval = 20f;
+
+    [Tooltip("İlk tempo artışının kaç saniye sonra geleceği.")]
+    [SerializeField] private float firstIncreaseDelay = 35f;
+
+    [Tooltip("İlk artıştan sonraki tempo artışları arasındaki süre.")]
+    [SerializeField] private float increaseInterval = 35f;
+
+    [Tooltip("Her tempo level sonrası interval biraz uzasın mı? Oyunun sürekli acele etmesini engeller.")]
+    [SerializeField] private bool increaseIntervalOverTime = true;
+
+    [SerializeField] private float intervalIncreasePerLevel = 3f;
+    [SerializeField] private float maxIncreaseInterval = 55f;
+
+    [Header("Tempo Warning Settings")]
+    [SerializeField] private bool useTempoWarning = true;
+    [SerializeField] private float warningTimeBeforeIncrease = 4f;
 
     [Header("Speed Scaling")]
-    [SerializeField] private float speedIncreaseAmount = 0.25f;
+    [SerializeField] private float speedIncreaseAmount = 0.35f;
     [SerializeField] private float easyMaxSpeed = 6.2f;
     [SerializeField] private float normalMaxSpeed = 7.6f;
     [SerializeField] private float hardMaxSpeed = 9.0f;
 
     [Header("Rhythm Tolerance Scaling")]
-    [SerializeField] private float toleranceDecreaseAmount = 0.01f;
+    [SerializeField] private float toleranceDecreaseAmount = 0.008f;
     [SerializeField] private float easyMinBeatTolerance = 0.16f;
     [SerializeField] private float normalMinBeatTolerance = 0.11f;
     [SerializeField] private float hardMinBeatTolerance = 0.075f;
@@ -29,20 +44,23 @@ public class DynamicDifficultyScaler : MonoBehaviour
     [SerializeField] private int reduceSpawnEveryBeatsEveryLevel = 2;
     [SerializeField] private int minimumSpawnEveryBeats = 2;
 
+    [Header("Spawn Distance Scaling")]
+    [SerializeField] private float spawnDistanceIncreaseAmount = 1.8f;
+    [SerializeField] private float maxSpawnDistanceAhead = 50f;
+
     [Header("Current Scaling State")]
     [SerializeField] private int difficultyLevel = 0;
     [SerializeField] private float survivedTime = 0f;
+    [SerializeField] private float nextIncreaseTime = 0f;
+    [SerializeField] private bool warningTriggeredForCurrentLevel = false;
 
-    [Header("Spawn Distance Scaling")]
-    [SerializeField] private float spawnDistanceIncreaseAmount = 1.5f;
-    [SerializeField] private float maxSpawnDistanceAhead = 50f;
-
-    private float nextIncreaseTime;
     public event Action<int> OnDynamicDifficultyIncreased;
+    public event Action<int, float> OnTempoIncreaseWarning;
 
     private void Start()
     {
-        nextIncreaseTime = increaseInterval;
+        nextIncreaseTime = firstIncreaseDelay;
+        warningTriggeredForCurrentLevel = false;
     }
 
     private void Update()
@@ -62,11 +80,55 @@ public class DynamicDifficultyScaler : MonoBehaviour
 
         survivedTime += Time.deltaTime;
 
+        CheckTempoWarning();
+
         if (survivedTime >= nextIncreaseTime)
         {
             IncreaseDifficulty();
-            nextIncreaseTime += increaseInterval;
+            ScheduleNextIncrease();
         }
+    }
+
+    private void CheckTempoWarning()
+    {
+        if (!useTempoWarning)
+        {
+            return;
+        }
+
+        if (warningTriggeredForCurrentLevel)
+        {
+            return;
+        }
+
+        float remainingTime = nextIncreaseTime - survivedTime;
+
+        if (remainingTime <= warningTimeBeforeIncrease && remainingTime > 0f)
+        {
+            warningTriggeredForCurrentLevel = true;
+
+            int nextLevel = difficultyLevel + 1;
+
+            Debug.Log("Tempo artışı yaklaşıyor. Yeni Level: " + nextLevel);
+
+            OnTempoIncreaseWarning?.Invoke(nextLevel, remainingTime);
+        }
+    }
+
+    private void ScheduleNextIncrease()
+    {
+        float nextInterval = increaseInterval;
+
+        if (increaseIntervalOverTime)
+        {
+            nextInterval += difficultyLevel * intervalIncreasePerLevel;
+            nextInterval = Mathf.Min(nextInterval, maxIncreaseInterval);
+        }
+
+        nextIncreaseTime = survivedTime + nextInterval;
+        warningTriggeredForCurrentLevel = false;
+
+        Debug.Log("Sonraki tempo artışı " + nextInterval + " saniye sonra.");
     }
 
     private void IncreaseDifficulty()
@@ -149,6 +211,25 @@ public class DynamicDifficultyScaler : MonoBehaviour
         Debug.Log("Yeni engel spawn aralığı: " + newSpawnEveryBeats + " beat");
     }
 
+    private void IncreaseSpawnDistance()
+    {
+        if (obstacleSpawner == null)
+        {
+            return;
+        }
+
+        float currentDistance = obstacleSpawner.GetSpawnDistanceAhead();
+
+        float newDistance = Mathf.Min(
+            currentDistance + spawnDistanceIncreaseAmount,
+            maxSpawnDistanceAhead
+        );
+
+        obstacleSpawner.SetSpawnDistanceAhead(newDistance);
+
+        Debug.Log("Yeni engel doğma mesafesi: " + newDistance);
+    }
+
     private float GetMaxSpeedByDifficulty()
     {
         if (difficultyManager == null)
@@ -189,26 +270,23 @@ public class DynamicDifficultyScaler : MonoBehaviour
         }
     }
 
-    private void IncreaseSpawnDistance()
-    {
-        if (obstacleSpawner == null)
-        {
-            return;
-        }
-
-        float currentDistance = obstacleSpawner.GetSpawnDistanceAhead();
-
-        float newDistance = Mathf.Min(
-            currentDistance + spawnDistanceIncreaseAmount,
-            maxSpawnDistanceAhead
-        );
-
-        obstacleSpawner.SetSpawnDistanceAhead(newDistance);
-
-        Debug.Log("Yeni engel doğma mesafesi: " + newDistance);
-    }
     public int GetDifficultyLevel()
     {
         return difficultyLevel;
+    }
+
+    public float GetSurvivedTime()
+    {
+        return survivedTime;
+    }
+
+    public float GetNextIncreaseTime()
+    {
+        return nextIncreaseTime;
+    }
+
+    public float GetRemainingTimeToNextIncrease()
+    {
+        return Mathf.Max(0f, nextIncreaseTime - survivedTime);
     }
 }
