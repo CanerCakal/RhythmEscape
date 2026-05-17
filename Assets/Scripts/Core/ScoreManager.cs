@@ -12,6 +12,12 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private int comboBonusPerMove = 2;
     [SerializeField] private int wrongInputPenalty = 5;
 
+    [Header("Beat Accuracy Score Settings")]
+    [SerializeField] private int perfectMoveScore = 20;
+    [SerializeField] private int goodMoveScore = 10;
+    [SerializeField] private int perfectComboBonus = 3;
+    [SerializeField] private int goodComboBonus = 2;
+
     [Header("Obstacle Score Settings")]
     [SerializeField] private int obstaclePassedScore = 25;
     [SerializeField] private int obstacleComboBonus = 5;
@@ -49,14 +55,12 @@ public class ScoreManager : MonoBehaviour
 
     private void OnEnable()
     {
-        PlayerMovement.OnCorrectRhythmMove += HandleCorrectRhythmMove;
-        PlayerMovement.OnWrongRhythmInput += HandleWrongRhythmInput;
+        PlayerMovement.OnRhythmInputJudged += HandleRhythmInputJudged;
     }
 
     private void OnDisable()
     {
-        PlayerMovement.OnCorrectRhythmMove -= HandleCorrectRhythmMove;
-        PlayerMovement.OnWrongRhythmInput -= HandleWrongRhythmInput;
+        PlayerMovement.OnRhythmInputJudged -= HandleRhythmInputJudged;
     }
 
     private void Start()
@@ -82,6 +86,78 @@ public class ScoreManager : MonoBehaviour
         score += earnedScore;
 
         Debug.Log("Doğru ritim hareketi: +" + earnedScore + " | Combo: " + combo);
+
+        NotifyScoreChanged();
+    }
+
+    private void HandleRhythmInputJudged(BeatAccuracy beatAccuracy)
+    {
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        switch (beatAccuracy)
+        {
+            case BeatAccuracy.Perfect:
+                AddPerfectMoveScore();
+                break;
+
+            case BeatAccuracy.Good:
+                AddGoodMoveScore();
+                break;
+
+            case BeatAccuracy.Miss:
+                ApplyMissPenalty();
+                break;
+        }
+    }
+
+    private void AddPerfectMoveScore()
+    {
+        combo++;
+
+        if (combo > highestCombo)
+        {
+            highestCombo = combo;
+        }
+
+        int earnedScore = perfectMoveScore + (combo * perfectComboBonus);
+        score += earnedScore;
+
+        Debug.Log("PERFECT hareket: +" + earnedScore + " | Combo: " + combo);
+
+        NotifyScoreChanged();
+    }
+
+    private void AddGoodMoveScore()
+    {
+        combo++;
+
+        if (combo > highestCombo)
+        {
+            highestCombo = combo;
+        }
+
+        int earnedScore = goodMoveScore + (combo * goodComboBonus);
+        score += earnedScore;
+
+        Debug.Log("GOOD hareket: +" + earnedScore + " | Combo: " + combo);
+
+        NotifyScoreChanged();
+    }
+
+    private void ApplyMissPenalty()
+    {
+        combo = 0;
+        score -= wrongInputPenalty;
+
+        if (score < 0)
+        {
+            score = 0;
+        }
+
+        Debug.Log("MISS! Combo sıfırlandı. Ceza: -" + wrongInputPenalty);
 
         NotifyScoreChanged();
     }
@@ -211,50 +287,50 @@ public class ScoreManager : MonoBehaviour
     }
 
     public void AddRhythmGateBonus(int bonusScore)
-{
-    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
     {
-        return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        if (bonusScore <= 0)
+        {
+            return;
+        }
+
+        score += bonusScore;
+        combo++;
+
+        if (combo > highestCombo)
+        {
+            highestCombo = combo;
+        }
+
+        Debug.Log("Rhythm Gate Bonus: +" + bonusScore + " | Combo: " + combo);
+
+        NotifyScoreChanged();
+        OnDodgeBonusAwarded?.Invoke("RHYTHM GATE", bonusScore);
     }
 
-    if (bonusScore <= 0)
+    public void ResetComboWithPenalty()
     {
-        return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        combo = 0;
+        score -= wrongInputPenalty;
+
+        if (score < 0)
+        {
+            score = 0;
+        }
+
+        Debug.Log("Rhythm Gate kaçırıldı. Combo sıfırlandı.");
+
+        NotifyScoreChanged();
     }
-
-    score += bonusScore;
-    combo++;
-
-    if (combo > highestCombo)
-    {
-        highestCombo = combo;
-    }
-
-    Debug.Log("Rhythm Gate Bonus: +" + bonusScore + " | Combo: " + combo);
-
-    NotifyScoreChanged();
-    OnDodgeBonusAwarded?.Invoke("RHYTHM GATE", bonusScore);
-}
-
-public void ResetComboWithPenalty()
-{
-    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
-    {
-        return;
-    }
-
-    combo = 0;
-    score -= wrongInputPenalty;
-
-    if (score < 0)
-    {
-        score = 0;
-    }
-
-    Debug.Log("Rhythm Gate kaçırıldı. Combo sıfırlandı.");
-
-    NotifyScoreChanged();
-}
 
     private void NotifyScoreChanged()
     {

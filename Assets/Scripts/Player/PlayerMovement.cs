@@ -5,6 +5,7 @@ public class PlayerMovement : MonoBehaviour
 {
     public static event Action OnCorrectRhythmMove;
     public static event Action OnWrongRhythmInput;
+    public static event Action<BeatAccuracy> OnRhythmInputJudged;
 
     [Header("Forward Movement")]
     [SerializeField] private float forwardSpeed = 5f;
@@ -64,10 +65,14 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!RhythmManager.Instance.IsOnBeat())
+        BeatAccuracy beatAccuracy = RhythmManager.Instance.GetBeatAccuracy();
+
+        OnRhythmInputJudged?.Invoke(beatAccuracy);
+
+        if (beatAccuracy == BeatAccuracy.Miss)
         {
             OnWrongRhythmInput?.Invoke();
-            Debug.Log("Yanlış zamanda bastın!");
+            Debug.Log("Yanlış zamanda bastın! Accuracy: " + beatAccuracy);
             return;
         }
 
@@ -83,7 +88,7 @@ public class PlayerMovement : MonoBehaviour
         UpdateTargetPosition();
 
         OnCorrectRhythmMove?.Invoke();
-        Debug.Log("Doğru ritimde hareket!");
+        Debug.Log("Ritimli hareket! Accuracy: " + beatAccuracy);
     }
 
     private void UpdateTargetPosition()

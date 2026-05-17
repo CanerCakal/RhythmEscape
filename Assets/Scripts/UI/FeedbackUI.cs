@@ -8,11 +8,13 @@ public class FeedbackUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI feedbackText;
 
     [Header("Message Settings")]
-    [SerializeField] private string perfectMessage = "Perfect!";
-    [SerializeField] private string missMessage = "Miss!";
+    [SerializeField] private string perfectMessage = "PERFECT!";
+    [SerializeField] private string goodMessage = "GOOD!";
+    [SerializeField] private string missMessage = "MISS!";
 
     [Header("Color Settings")]
     [SerializeField] private Color perfectColor = Color.green;
+    [SerializeField] private Color goodColor = Color.yellow;
     [SerializeField] private Color missColor = Color.red;
 
     [Header("Animation Settings")]
@@ -29,24 +31,30 @@ public class FeedbackUI : MonoBehaviour
 
     private void OnEnable()
     {
-        PlayerMovement.OnCorrectRhythmMove += ShowPerfect;
-        PlayerMovement.OnWrongRhythmInput += ShowMiss;
+        PlayerMovement.OnRhythmInputJudged += ShowBeatAccuracy;
     }
 
     private void OnDisable()
     {
-        PlayerMovement.OnCorrectRhythmMove -= ShowPerfect;
-        PlayerMovement.OnWrongRhythmInput -= ShowMiss;
+        PlayerMovement.OnRhythmInputJudged -= ShowBeatAccuracy;
     }
 
-    private void ShowPerfect()
+    private void ShowBeatAccuracy(BeatAccuracy beatAccuracy)
     {
-        ShowFeedback(perfectMessage, perfectColor);
-    }
+        switch (beatAccuracy)
+        {
+            case BeatAccuracy.Perfect:
+                ShowFeedback(perfectMessage, perfectColor);
+                break;
 
-    private void ShowMiss()
-    {
-        ShowFeedback(missMessage, missColor);
+            case BeatAccuracy.Good:
+                ShowFeedback(goodMessage, goodColor);
+                break;
+
+            case BeatAccuracy.Miss:
+                ShowFeedback(missMessage, missColor);
+                break;
+        }
     }
 
     private void ShowFeedback(string message, Color color)

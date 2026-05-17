@@ -12,6 +12,10 @@ public class RhythmManager : MonoBehaviour
     [SerializeField] private float bpm = 120f;
     [SerializeField] private float beatTolerance = 0.15f;
 
+    [Header("Beat Accuracy Settings")]
+    [SerializeField] private float perfectTolerance = 0.06f;
+    [SerializeField] private float goodTolerance = 0.15f;
+
     public event Action<int> OnBeat;
 
     private float secondsPerBeat;
@@ -94,6 +98,28 @@ public class RhythmManager : MonoBehaviour
 
     public bool IsOnBeat()
     {
+        return GetTimeToNearestBeat() <= beatTolerance;
+    }
+
+    public BeatAccuracy GetBeatAccuracy()
+    {
+        float timeToNearestBeat = GetTimeToNearestBeat();
+
+        if (timeToNearestBeat <= perfectTolerance)
+        {
+            return BeatAccuracy.Perfect;
+        }
+
+        if (timeToNearestBeat <= goodTolerance)
+        {
+            return BeatAccuracy.Good;
+        }
+
+        return BeatAccuracy.Miss;
+    }
+
+    private float GetTimeToNearestBeat()
+    {
         float songTime = GetSongTime();
 
         float beatPosition = songTime / secondsPerBeat;
@@ -101,7 +127,7 @@ public class RhythmManager : MonoBehaviour
 
         float timeToNearestBeat = Mathf.Abs(beatPosition - nearestBeat) * secondsPerBeat;
 
-        return timeToNearestBeat <= beatTolerance;
+        return timeToNearestBeat;
     }
 
     public float GetSongTime()
@@ -125,5 +151,25 @@ public class RhythmManager : MonoBehaviour
     public float GetBeatTolerance()
     {
         return beatTolerance;
+    }
+
+    public void SetPerfectTolerance(float newTolerance)
+    {
+        perfectTolerance = Mathf.Max(0.01f, newTolerance);
+    }
+
+    public float GetPerfectTolerance()
+    {
+        return perfectTolerance;
+    }
+
+    public void SetGoodTolerance(float newTolerance)
+    {
+        goodTolerance = Mathf.Max(perfectTolerance, newTolerance);
+    }
+
+    public float GetGoodTolerance()
+    {
+        return goodTolerance;
     }
 }

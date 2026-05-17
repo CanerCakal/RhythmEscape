@@ -4360,7 +4360,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RhythmManager
   musicSource: {fileID: 356590399}
   bpm: 90
-  beatTolerance: 0.2
+  beatTolerance: 0.15
+  perfectTolerance: 0.06
+  goodTolerance: 0.15
 --- !u!4 &1415821362
 Transform:
   m_ObjectHideFlags: 0
