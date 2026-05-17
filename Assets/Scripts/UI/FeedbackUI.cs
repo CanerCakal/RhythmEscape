@@ -22,23 +22,42 @@ public class FeedbackUI : MonoBehaviour
     [SerializeField] private float startScale = 1.5f;
     [SerializeField] private float endScale = 1f;
 
-    private Coroutine feedbackCoroutine;
+    [Header("Fever Message Settings")]
+    [SerializeField] private string feverMessage = "FEVER MODE!";
+    [SerializeField] private Color feverColor = Color.cyan;
 
+    private Coroutine feedbackCoroutine;
+    private bool isFeverSubscribed = false;
     private void Awake()
     {
         HideFeedback();
     }
 
+    private void Update()
+    {
+        TrySubscribeToFeverManager();
+    }
+
     private void OnEnable()
     {
         PlayerMovement.OnRhythmInputJudged += ShowBeatAccuracy;
+        TrySubscribeToFeverManager();
     }
 
     private void OnDisable()
     {
         PlayerMovement.OnRhythmInputJudged -= ShowBeatAccuracy;
-    }
 
+        if (FeverManager.Instance != null && isFeverSubscribed)
+        {
+            FeverManager.Instance.OnFeverStarted -= ShowFeverStarted;
+            isFeverSubscribed = false;
+        }
+    }
+    private void ShowFeverStarted()
+    {
+        ShowFeedback(feverMessage, feverColor);
+    }
     private void ShowBeatAccuracy(BeatAccuracy beatAccuracy)
     {
         switch (beatAccuracy)
@@ -109,5 +128,21 @@ public class FeedbackUI : MonoBehaviour
 
         feedbackText.gameObject.SetActive(false);
         feedbackText.transform.localScale = Vector3.one;
+    }
+
+    private void TrySubscribeToFeverManager()
+    {
+        if (isFeverSubscribed)
+        {
+            return;
+        }
+
+        if (FeverManager.Instance == null)
+        {
+            return;
+        }
+
+        FeverManager.Instance.OnFeverStarted += ShowFeverStarted;
+        isFeverSubscribed = true;
     }
 }

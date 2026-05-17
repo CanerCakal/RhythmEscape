@@ -123,6 +123,7 @@ public class ScoreManager : MonoBehaviour
         }
 
         int earnedScore = perfectMoveScore + (combo * perfectComboBonus);
+        earnedScore *= GetCurrentScoreMultiplier();
         score += earnedScore;
 
         Debug.Log("PERFECT hareket: +" + earnedScore + " | Combo: " + combo);
@@ -140,6 +141,7 @@ public class ScoreManager : MonoBehaviour
         }
 
         int earnedScore = goodMoveScore + (combo * goodComboBonus);
+        earnedScore *= GetCurrentScoreMultiplier();
         score += earnedScore;
 
         Debug.Log("GOOD hareket: +" + earnedScore + " | Combo: " + combo);
@@ -195,6 +197,7 @@ public class ScoreManager : MonoBehaviour
         }
 
         int earnedScore = obstaclePassedScore + (combo * obstacleComboBonus) + extraScore;
+        earnedScore *= GetCurrentScoreMultiplier();
         score += earnedScore;
 
         Debug.Log(obstacleDisplayName + " geçildi: +" + earnedScore);
@@ -216,7 +219,7 @@ public class ScoreManager : MonoBehaviour
             return;
         }
 
-        score += nearMissBonusScore;
+        score += nearMissBonusScore * GetCurrentScoreMultiplier();
 
         Debug.Log("Near Miss Bonus: +" + nearMissBonusScore);
 
@@ -231,7 +234,7 @@ public class ScoreManager : MonoBehaviour
             return;
         }
 
-        score += perfectDodgeBonusScore;
+        score += perfectDodgeBonusScore * GetCurrentScoreMultiplier();
 
         Debug.Log("Perfect Dodge Bonus: +" + perfectDodgeBonusScore);
 
@@ -250,7 +253,7 @@ public class ScoreManager : MonoBehaviour
             return;
         }
 
-        score += rewardScore;
+        score += rewardScore * GetCurrentScoreMultiplier();
 
         Debug.Log("Görev ödülü kazanıldı: " + questName + " +" + rewardScore);
 
@@ -335,5 +338,15 @@ public class ScoreManager : MonoBehaviour
     private void NotifyScoreChanged()
     {
         OnScoreChanged?.Invoke(score, combo, highestCombo);
+    }
+
+    private int GetCurrentScoreMultiplier()
+    {
+        if (FeverManager.Instance == null)
+        {
+            return 1;
+        }
+
+        return FeverManager.Instance.FeverScoreMultiplier;
     }
 }
