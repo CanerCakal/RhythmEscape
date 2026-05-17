@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class MainMenuController : MonoBehaviour
 {
     private const string BestScoreKey = "BestScore";
+    private const string SelectedDifficultyKey = "SelectedDifficulty";
 
     [Header("Scene Settings")]
     [SerializeField] private string musicSelectSceneName = "MusicSelectScene";
@@ -18,6 +19,7 @@ public class MainMenuController : MonoBehaviour
 
     private void Start()
     {
+        Time.timeScale = 1f;
         UpdateBestScoreText();
 
         if (resetBestScoreButton != null)
@@ -48,9 +50,10 @@ public class MainMenuController : MonoBehaviour
     {
         StartGameWithDifficulty("Hard");
     }
+
     private void StartGameWithDifficulty(string difficulty)
     {
-        PlayerPrefs.SetString("SelectedDifficulty", difficulty);
+        PlayerPrefs.SetString(SelectedDifficultyKey, difficulty);
         PlayerPrefs.Save();
 
         Debug.Log("Seçilen zorluk: " + difficulty);
@@ -74,7 +77,7 @@ public class MainMenuController : MonoBehaviour
 
         if (bestScoreText != null)
         {
-            bestScoreText.text = "Best Score: " + bestScore;
+            bestScoreText.text = "BEST SCORE  " + bestScore;
         }
     }
 
