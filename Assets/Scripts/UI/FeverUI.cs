@@ -7,38 +7,34 @@ public class FeverUI : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Image feverFillImage;
     [SerializeField] private TextMeshProUGUI feverText;
+    [SerializeField] private TextMeshProUGUI feverPercentText;
 
     [Header("Text Settings")]
     [SerializeField] private string normalText = "FEVER";
-    [SerializeField] private string activeText = "FEVER MODE!";
+    [SerializeField] private string activeText = "FEVER MODE";
 
     [Header("Animation Settings")]
     [SerializeField] private float fillLerpSpeed = 8f;
     [SerializeField] private float activePulseScale = 1.08f;
     [SerializeField] private float activePulseSpeed = 6f;
 
-    private RectTransform rectTransform;
+    [Header("Color Settings")]
+    [SerializeField] private Color normalFillColor = Color.cyan;
+    [SerializeField] private Color activeFillColor = Color.yellow;
+
     private float targetFillAmount = 0f;
     private bool isSubscribed = false;
     private Vector3 originalScale;
+    private Image panelImage;
 
     private void Awake()
     {
-        rectTransform = GetComponent<RectTransform>();
         originalScale = transform.localScale;
+        panelImage = GetComponent<Image>();
 
-        if (feverFillImage != null)
-        {
-            feverFillImage.type = Image.Type.Filled;
-            feverFillImage.fillMethod = Image.FillMethod.Horizontal;
-            feverFillImage.fillOrigin = 0;
-            feverFillImage.fillAmount = 0f;
-        }
-
-        if (feverText != null)
-        {
-            feverText.text = normalText;
-        }
+        SetupVerticalFillImage();
+        UpdateText(false);
+        UpdatePercentText(0f);
     }
 
     private void Start()
@@ -71,6 +67,21 @@ public class FeverUI : MonoBehaviour
 
         UpdateFillVisual();
         UpdatePulseVisual();
+        UpdateActiveTimerText();
+    }
+
+    private void SetupVerticalFillImage()
+    {
+        if (feverFillImage == null)
+        {
+            return;
+        }
+
+        feverFillImage.type = Image.Type.Filled;
+        feverFillImage.fillMethod = Image.FillMethod.Vertical;
+        feverFillImage.fillOrigin = 0;
+        feverFillImage.fillAmount = 0f;
+        feverFillImage.color = normalFillColor;
     }
 
     private void TrySubscribeToFeverManager()
@@ -92,6 +103,7 @@ public class FeverUI : MonoBehaviour
         isSubscribed = true;
 
         targetFillAmount = FeverManager.Instance.GetFeverNormalizedValue();
+        UpdatePercentText(targetFillAmount);
 
         Debug.Log("FeverUI FeverManager'a bağlandı.");
     }
@@ -101,30 +113,38 @@ public class FeverUI : MonoBehaviour
         if (maxValue <= 0)
         {
             targetFillAmount = 0f;
+            UpdatePercentText(0f);
             return;
         }
 
         targetFillAmount = (float)currentValue / maxValue;
+        UpdatePercentText(targetFillAmount);
     }
 
     private void HandleFeverStarted()
     {
         targetFillAmount = 1f;
 
-        if (feverText != null)
+        if (feverFillImage != null)
         {
-            feverText.text = activeText;
+            feverFillImage.color = activeFillColor;
         }
+
+        UpdateText(true);
+        UpdatePercentText(1f);
     }
 
     private void HandleFeverEnded()
     {
         targetFillAmount = 0f;
 
-        if (feverText != null)
+        if (feverFillImage != null)
         {
-            feverText.text = normalText;
+            feverFillImage.color = normalFillColor;
         }
+
+        UpdateText(false);
+        UpdatePercentText(0f);
 
         transform.localScale = originalScale;
     }
@@ -168,5 +188,47 @@ public class FeverUI : MonoBehaviour
         float scale = Mathf.Lerp(1f, activePulseScale, normalizedPulse);
 
         transform.localScale = originalScale * scale;
+    }
+
+    private void UpdateText(bool isFeverActive)
+    {
+        if (feverText == null)
+        {
+            return;
+        }
+
+        feverText.text = isFeverActive ? activeText : normalText;
+    }
+
+    private void UpdatePercentText(float normalizedValue)
+    {
+        if (feverPercentText == null)
+        {
+            return;
+        }
+
+        int percent = Mathf.RoundToInt(normalizedValue * 100f);
+        feverPercentText.text = percent + "%";
+    }
+
+    private void UpdateActiveTimerText()
+    {
+        if (FeverManager.Instance == null)
+        {
+            return;
+        }
+
+        if (!FeverManager.Instance.IsFeverActive)
+        {
+            return;
+        }
+
+        if (feverPercentText == null)
+        {
+            return;
+        }
+
+        float remainingTime = FeverManager.Instance.GetRemainingFeverTime();
+        feverPercentText.text = remainingTime.ToString("0.0") + "s";
     }
 }

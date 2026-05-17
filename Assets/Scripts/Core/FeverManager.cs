@@ -5,13 +5,22 @@ public class FeverManager : MonoBehaviour
 {
     public static FeverManager Instance;
 
-    [Header("Fever Settings")]
+    [Header("Fever Meter Settings")]
     [SerializeField] private int maxFeverMeter = 100;
-    [SerializeField] private int perfectGain = 20;
-    [SerializeField] private int goodGain = 8;
-    [SerializeField] private int missPenalty = 30;
+    [SerializeField] private int perfectGain = 18;
+    [SerializeField] private int goodGain = 7;
+    [SerializeField] private int missPenalty = 35;
+
+    [Header("Combo Bonus Settings")]
+    [SerializeField] private bool useComboBonusGain = true;
+    [SerializeField] private int comboStepForBonus = 5;
+    [SerializeField] private int bonusGainPerComboStep = 2;
+    [SerializeField] private int maxComboBonusGain = 12;
+
+    [Header("Fever Mode Settings")]
     [SerializeField] private float feverDuration = 8f;
     [SerializeField] private int feverScoreMultiplier = 2;
+    [SerializeField] private bool resetMeterAfterFeverEnds = true;
 
     [Header("Current State")]
     [SerializeField] private int currentFeverMeter = 0;
@@ -36,6 +45,11 @@ public class FeverManager : MonoBehaviour
         }
 
         Instance = this;
+    }
+
+    private void Start()
+    {
+        NotifyFeverMeterChanged();
     }
 
     private void OnEnable()
@@ -86,11 +100,11 @@ public class FeverManager : MonoBehaviour
         switch (beatAccuracy)
         {
             case BeatAccuracy.Perfect:
-                AddFeverMeter(perfectGain);
+                AddFeverMeter(perfectGain + GetComboBonusGain());
                 break;
 
             case BeatAccuracy.Good:
-                AddFeverMeter(goodGain);
+                AddFeverMeter(goodGain + GetComboBonusGain());
                 break;
 
             case BeatAccuracy.Miss:
@@ -99,8 +113,38 @@ public class FeverManager : MonoBehaviour
         }
     }
 
+    private int GetComboBonusGain()
+    {
+        if (!useComboBonusGain)
+        {
+            return 0;
+        }
+
+        if (ScoreManager.Instance == null)
+        {
+            return 0;
+        }
+
+        int currentCombo = ScoreManager.Instance.Combo;
+
+        if (currentCombo <= 0)
+        {
+            return 0;
+        }
+
+        int comboStep = currentCombo / comboStepForBonus;
+        int calculatedBonus = comboStep * bonusGainPerComboStep;
+
+        return Mathf.Clamp(calculatedBonus, 0, maxComboBonusGain);
+    }
+
     private void AddFeverMeter(int amount)
     {
+        if (amount <= 0)
+        {
+            return;
+        }
+
         currentFeverMeter += amount;
 
         if (currentFeverMeter >= maxFeverMeter)
@@ -116,6 +160,11 @@ public class FeverManager : MonoBehaviour
 
     private void ReduceFeverMeter(int amount)
     {
+        if (amount <= 0)
+        {
+            return;
+        }
+
         currentFeverMeter -= amount;
 
         if (currentFeverMeter < 0)
@@ -150,7 +199,11 @@ public class FeverManager : MonoBehaviour
 
         isFeverActive = false;
         feverTimer = 0f;
-        currentFeverMeter = 0;
+
+        if (resetMeterAfterFeverEnds)
+        {
+            currentFeverMeter = 0;
+        }
 
         Debug.Log("FEVER MODE BİTTİ.");
 
@@ -176,5 +229,10 @@ public class FeverManager : MonoBehaviour
     public float GetRemainingFeverTime()
     {
         return feverTimer;
+    }
+
+    public float GetFeverDuration()
+    {
+        return feverDuration;
     }
 }
