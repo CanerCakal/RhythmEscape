@@ -555,16 +555,6 @@ public class BeatObstacleSpawner : MonoBehaviour
 
     public void SetRhythmGateGameOverOnMiss(bool value)
     {
-        if (rhythmGatePrefab == null)
-        {
-            return;
-        }
 
-        RhythmGate rhythmGate = rhythmGatePrefab.GetComponent<RhythmGate>();
-
-        if (rhythmGate != null)
-        {
-            rhythmGate.SetGameOverOnMiss(value);
-        }
     }
 }

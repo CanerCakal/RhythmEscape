@@ -14,14 +14,30 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float laneDistance = 2f;
     [SerializeField] private float laneChangeSpeed = 10f;
 
+    [Header("Jump Settings")]
+    [SerializeField] private bool enableJump = true;
+    [SerializeField] private float jumpHeight = 2.4f;
+    [SerializeField] private float jumpDuration = 0.55f;
+    [SerializeField] private KeyCode jumpKey = KeyCode.Space;
+
+    [Header("Jump Input Alternatives")]
+    [SerializeField] private bool useAlternativeJumpKeys = true;
+
     private int currentLane = 1;
     // 0 = sol, 1 = orta, 2 = sağ
 
     private Vector3 targetPosition;
 
+    private float baseYPosition;
+    private bool isJumping = false;
+    private float jumpTimer = 0f;
+
+    public bool IsJumping => isJumping;
+
     private void Start()
     {
         targetPosition = transform.position;
+        baseYPosition = transform.position.y;
     }
 
     private void Update()
@@ -36,6 +52,7 @@ public class PlayerMovement : MonoBehaviour
 
         MoveForward();
         MoveToTargetLane();
+        HandleJump();
         HandleInput();
     }
 
@@ -55,6 +72,31 @@ public class PlayerMovement : MonoBehaviour
         {
             TryMoveToLane(1);
         }
+
+        if (ShouldJump())
+        {
+            TryJump();
+        }
+    }
+
+    private bool ShouldJump()
+    {
+        if (!enableJump)
+        {
+            return false;
+        }
+
+        if (Input.GetKeyDown(jumpKey))
+        {
+            return true;
+        }
+
+        if (!useAlternativeJumpKeys)
+        {
+            return false;
+        }
+
+        return Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
     }
 
     private void TryMoveToLane(int direction)
@@ -91,6 +133,49 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log("Ritimli hareket! Accuracy: " + beatAccuracy);
     }
 
+    private void TryJump()
+    {
+        if (isJumping)
+        {
+            return;
+        }
+
+        isJumping = true;
+        jumpTimer = 0f;
+
+        Debug.Log("Player zıpladı.");
+    }
+
+    private void HandleJump()
+    {
+        if (!isJumping)
+        {
+            return;
+        }
+
+        jumpTimer += Time.deltaTime;
+
+        float normalizedTime = jumpTimer / jumpDuration;
+
+        if (normalizedTime >= 1f)
+        {
+            isJumping = false;
+
+            Vector3 groundedPosition = transform.position;
+            groundedPosition.y = baseYPosition;
+            transform.position = groundedPosition;
+
+            return;
+        }
+
+        float jumpCurve = Mathf.Sin(normalizedTime * Mathf.PI);
+        float currentY = baseYPosition + (jumpCurve * jumpHeight);
+
+        Vector3 newPosition = transform.position;
+        newPosition.y = currentY;
+        transform.position = newPosition;
+    }
+
     private void UpdateTargetPosition()
     {
         float targetX = (currentLane - 1) * laneDistance;
@@ -116,6 +201,7 @@ public class PlayerMovement : MonoBehaviour
             laneChangeSpeed * Time.deltaTime
         );
     }
+
     public void SetForwardSpeed(float newSpeed)
     {
         forwardSpeed = newSpeed;
@@ -124,5 +210,15 @@ public class PlayerMovement : MonoBehaviour
     public float GetForwardSpeed()
     {
         return forwardSpeed;
+    }
+
+    public int GetCurrentLane()
+    {
+        return currentLane;
+    }
+
+    public float GetLaneDistance()
+    {
+        return laneDistance;
     }
 }

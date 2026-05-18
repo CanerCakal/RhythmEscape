@@ -17,3 +17,9 @@ MonoBehaviour:
   audioClip: {fileID: 8300000, guid: 87c6e09bf70f54bff9846adec36e2dec, type: 3}
   bpm: 140
   difficultyLabel: Hard
+  playerSpeedMultiplier: 1
+  obstacleSpawnEveryBeats: 4
+  rhythmGateEveryBeats: 48
+  minimumComboForRhythmGate: 8
+  rhythmGateGameOverOnMiss: 0
+  themeColor: {r: 0, g: 1, b: 1, a: 1}

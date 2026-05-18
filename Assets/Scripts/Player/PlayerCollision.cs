@@ -37,6 +37,12 @@ public class PlayerCollision : MonoBehaviour
             return;
         }
 
+        if (PlayerInvincibility.Instance != null && PlayerInvincibility.Instance.IsInvincible)
+        {
+            Debug.Log("Oyuncu dokunulmaz. Engel hasarı engellendi: " + other.name);
+            return;
+        }
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.GameOver();

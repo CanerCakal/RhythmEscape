@@ -290,30 +290,25 @@ public class ScoreManager : MonoBehaviour
     }
 
     public void AddRhythmGateBonus(int bonusScore)
+{
+    if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
     {
-        if (GameManager.Instance != null && GameManager.Instance.IsGameOver)
-        {
-            return;
-        }
-
-        if (bonusScore <= 0)
-        {
-            return;
-        }
-
-        score += bonusScore;
-        combo++;
-
-        if (combo > highestCombo)
-        {
-            highestCombo = combo;
-        }
-
-        Debug.Log("Rhythm Gate Bonus: +" + bonusScore + " | Combo: " + combo);
-
-        NotifyScoreChanged();
-        OnDodgeBonusAwarded?.Invoke("RHYTHM GATE", bonusScore);
+        return;
     }
+
+    if (bonusScore <= 0)
+    {
+        return;
+    }
+
+    int earnedScore = bonusScore * GetCurrentScoreMultiplier();
+    score += earnedScore;
+
+    Debug.Log("Bonus Gate Score: +" + earnedScore);
+
+    NotifyScoreChanged();
+    OnDodgeBonusAwarded?.Invoke("BONUS GATE", earnedScore);
+}
 
     public void ResetComboWithPenalty()
     {

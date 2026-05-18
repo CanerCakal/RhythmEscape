@@ -2,22 +2,22 @@ using UnityEngine;
 
 public class RhythmGate : MonoBehaviour
 {
-    [Header("Gate Settings")]
-    [SerializeField] private int successBonusScore = 75;
-    [SerializeField] private bool gameOverOnMiss = false;
+    [Header("Bonus Gate Settings")]
+    [SerializeField] private int bonusScore = 100;
     [SerializeField] private bool destroyAfterTrigger = true;
+    [SerializeField] private float destroyDelay = 0.2f;
 
     [Header("Visual Feedback")]
     [SerializeField] private bool usePulse = true;
     [SerializeField] private float pulseScale = 1.15f;
     [SerializeField] private float pulseSpeed = 6f;
     [SerializeField] private Color normalColor = Color.cyan;
-    [SerializeField] private Color activeColor = Color.green;
-    [SerializeField] private Color missColor = Color.red;
+    [SerializeField] private Color collectedColor = Color.yellow;
 
     private Renderer gateRenderer;
     private Vector3 originalScale;
     private bool isTriggered = false;
+    private Transform player;
 
     private void Awake()
     {
@@ -67,59 +67,23 @@ public class RhythmGate : MonoBehaviour
 
         isTriggered = true;
 
-        bool isOnBeat = RhythmManager.Instance != null && RhythmManager.Instance.IsOnBeat();
-
-        if (isOnBeat)
-        {
-            HandleSuccess();
-        }
-        else
-        {
-            HandleMiss();
-        }
+        CollectBonus();
     }
 
-    private void HandleSuccess()
+    private void CollectBonus()
     {
-        ApplyColor(activeColor);
+        ApplyColor(collectedColor);
 
         if (ScoreManager.Instance != null)
         {
-            ScoreManager.Instance.AddRhythmGateBonus(successBonusScore);
+            ScoreManager.Instance.AddRhythmGateBonus(bonusScore);
         }
 
-        Debug.Log("Rhythm Gate başarıyla geçildi. Bonus: +" + successBonusScore);
+        Debug.Log("Bonus Gate toplandı. Bonus: +" + bonusScore);
 
         if (destroyAfterTrigger)
         {
-            Destroy(gameObject, 0.15f);
-        }
-    }
-
-    private void HandleMiss()
-    {
-        ApplyColor(missColor);
-
-        Debug.Log("Rhythm Gate yanlış zamanda geçildi.");
-
-        if (gameOverOnMiss)
-        {
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.GameOver();
-            }
-        }
-        else
-        {
-            if (ScoreManager.Instance != null)
-            {
-                ScoreManager.Instance.ResetComboWithPenalty();
-            }
-
-            if (destroyAfterTrigger)
-            {
-                Destroy(gameObject, 0.15f);
-            }
+            Destroy(gameObject, destroyDelay);
         }
     }
 
@@ -127,6 +91,12 @@ public class RhythmGate : MonoBehaviour
     {
         if (!usePulse)
         {
+            return;
+        }
+
+        if (isTriggered)
+        {
+            transform.localScale = originalScale * pulseScale;
             return;
         }
 
@@ -150,15 +120,13 @@ public class RhythmGate : MonoBehaviour
         }
     }
 
-    private Transform player;
-
     public void Initialize(Transform playerTransform)
     {
         player = playerTransform;
     }
 
-    public void SetGameOverOnMiss(bool value)
+    public void SetBonusScore(int newBonusScore)
     {
-        gameOverOnMiss = value;
+        bonusScore = Mathf.Max(0, newBonusScore);
     }
 }
